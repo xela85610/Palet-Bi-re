@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 
 const screenWidth = Dimensions.get('window').width;
@@ -75,7 +75,12 @@ export default function HomeScreen({ navigation }) {
             </View>
 
             <Pressable style={styles.newGameButton}>
-                <Text style={styles.newGameText}>Nouvelle Partie</Text>
+                <Image
+                    source={require('../assets/images/logo.png')}
+                    style={styles.logoButton}
+                    resizeMode="contain"
+                />
+                <Text style={styles.newGameText}>Jouer</Text>
             </Pressable>
         </View>
     );
@@ -139,5 +144,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
         textAlign: 'center',
+    },
+    logoButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 40,
     },
 });
