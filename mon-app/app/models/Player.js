@@ -1,9 +1,9 @@
 
 export function createPlayer(name, photoUri = null) {
     return {
-        id: Date.now().toString(), // ID unique
+        id: Date.now().toString(),
         name,
-        photoUri,                 // URI image depuis Camera
+        photoUri,
         victories: 0,
         gamesPlayed: 0,
         beerDrinks: 0,
