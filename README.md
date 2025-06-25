@@ -1,2 +1,2 @@
-# Palet-Bi-re
+# Palet-Bière
 app android 
