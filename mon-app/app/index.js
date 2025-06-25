@@ -14,7 +14,7 @@ export default function Index() {
   return (
       <NavigationIndependentTree>
         <NavigationContainer>
-          <Stack.Navigator initialRouteName="Accueil" id={}>
+          <Stack.Navigator initialRouteName="Accueil">
             <Stack.Screen name="Accueil" component={Home} options={{ headerShown: false }} />
             <Stack.Screen name="Joueurs" component={Joueurs} />
             <Stack.Screen name="Règles" component={Regles} />
