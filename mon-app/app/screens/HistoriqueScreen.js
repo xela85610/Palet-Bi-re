@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Historique() {
+export default function HistoriqueScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Écran Historique</Text>

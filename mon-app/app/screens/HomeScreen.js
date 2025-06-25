@@ -38,13 +38,10 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
     );
 };
 
-export default function Home({ navigation }) {
+export default function HomeScreen({ navigation }) {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>
-                🎯 Palet & Bière 🍻
-            </Text>
-            <Text style={styles.subtitle}>Jeu convivial entre amis</Text>
+            <Text style={styles.subtitle}>"Visez, lancez, trinquez – le palet comme on l’aime !"</Text>
 
             <View style={styles.menuGrid}>
                 <MenuButton
@@ -90,29 +87,23 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF8EA',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingTop: 60,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#6E3B00',
-        textAlign: 'center',
+        paddingTop: 40,
     },
     subtitle: {
         fontSize: 16,
         color: '#B05C00',
-        marginBottom: 30,
+        marginBottom: 35,
     },
     menuGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-evenly',
+        justifyContent: 'center',
         width: screenWidth * 0.9,
         marginBottom: 40,
     },
     menuButton: {
-        width: screenWidth * 0.4,
-        height: 120,
+        width: screenWidth * 0.35,
+        height: 130,
         margin: 10,
         borderRadius: 20,
         justifyContent: 'center',

@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Regles() {
+export default function ClassementScreen() {
     return (
         <View style={styles.container}>
-            <Text style={styles.text}>Écran Règles</Text>
+            <Text style={styles.text}>Écran Classement</Text>
         </View>
     );
 }

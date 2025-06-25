@@ -1,27 +1,31 @@
 import React from 'react';
-import Home from './screens/Home';
-import Joueurs from './screens/Joueurs';
-import Regles from './screens/Regles';
-import Classement from './screens/Classement';
-import Historique from './screens/Historique';
+import HomeScreen from './screens/HomeScreen';
+import JoueurScreen from './screens/JoueurScreen';
+import RegleScreen from './screens/RegleScreen';
+import ClassementScreen from './screens/./ClassementScreen';
+import HistoriqueScreen from './screens/HistoriqueScreen';
 
 import { NavigationContainer, NavigationIndependentTree } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import CustomHeader from './components/CustomHeader';
 
 const Stack = createNativeStackNavigator();
 
 export default function Index() {
   return (
-      <NavigationIndependentTree>
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Accueil">
-            <Stack.Screen name="Accueil" component={Home} options={{ headerShown: false }} />
-            <Stack.Screen name="Joueurs" component={Joueurs} />
-            <Stack.Screen name="Règles" component={Regles} />
-            <Stack.Screen name="Classement" component={Classement} />
-            <Stack.Screen name="Historique" component={Historique} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </NavigationIndependentTree>
+    <NavigationIndependentTree>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Accueil"
+          screenOptions={{ header: () => <CustomHeader /> }}
+        >
+          <Stack.Screen name="Accueil" component={HomeScreen} />
+          <Stack.Screen name="Joueurs" component={JoueurScreen} />
+          <Stack.Screen name="Règles" component={RegleScreen} />
+          <Stack.Screen name="Classement" component={ClassementScreen} />
+          <Stack.Screen name="Historique" component={HistoriqueScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </NavigationIndependentTree>
   );
 }
