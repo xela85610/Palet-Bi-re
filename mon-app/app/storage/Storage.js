@@ -32,7 +32,6 @@ export async function clearAllData() {
     }
 }
 
-// Players
 export async function getPlayers() {
     return await loadData(KEYS.PLAYERS);
 }
@@ -41,7 +40,6 @@ export async function savePlayers(players) {
     await saveData(KEYS.PLAYERS, players);
 }
 
-// Games
 export async function getGames() {
     return await loadData(KEYS.GAMES);
 }
@@ -50,7 +48,6 @@ export async function saveGames(games) {
     await saveData(KEYS.GAMES, games);
 }
 
-// Rules
 export async function getRules() {
     return await loadData(KEYS.RULES);
 }

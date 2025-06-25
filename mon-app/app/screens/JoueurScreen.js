@@ -5,7 +5,6 @@ import {
     StyleSheet,
     FlatList,
     Pressable,
-    Alert,
     TextInput,
     Modal,
     Image,
@@ -14,6 +13,22 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { getPlayers, savePlayers } from '../storage/Storage';
 import { createPlayer } from '../models/Player';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+
+// Composant pour effet de zoom
+function ZoomPressable({ children, style, ...props }) {
+    return (
+        <Pressable
+            {...props}
+            style={({ pressed }) => [
+                style,
+                { transform: [{ scale: pressed ? 0.85 : 1 }] },
+            ]}
+        >
+            {children}
+        </Pressable>
+    );
+}
 
 export default function JoueurScreen() {
     const [players, setPlayers] = useState([]);
@@ -22,6 +37,8 @@ export default function JoueurScreen() {
     const [avatarUri, setAvatarUri] = useState(null);
     const [selectedPlayer, setSelectedPlayer] = useState(null);
     const [showStatsModal, setShowStatsModal] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [playerToDelete, setPlayerToDelete] = useState(null);
 
     useEffect(() => {
         loadPlayers();
@@ -29,7 +46,16 @@ export default function JoueurScreen() {
 
     const loadPlayers = async () => {
         const data = await getPlayers();
-        setPlayers(data);
+        if (!data || data.length === 0) {
+            const blue = { ...createPlayer('Equipe bleu', null, { color: '#1976D2' }), id: 'equipe-bleu' };
+            await new Promise(res => setTimeout(res, 1));
+            const red = { ...createPlayer('Equipe rouge', null, { color: '#D32F2F' }), id: 'equipe-rouge' };
+            const defaultPlayers = [blue, red];
+            setPlayers(defaultPlayers);
+            await savePlayers(defaultPlayers);
+        } else {
+            setPlayers(data);
+        }
     };
 
     const pickImage = async () => {
@@ -61,23 +87,21 @@ export default function JoueurScreen() {
         setModalVisible(false);
     };
 
-    const handleDeletePlayer = (id) => {
-        Alert.alert(
-            'Supprimer ce joueur ?',
-            'Cette action est irréversible.',
-            [
-                { text: 'Annuler', style: 'cancel' },
-                {
-                    text: 'Supprimer',
-                    style: 'destructive',
-                    onPress: async () => {
-                        const updated = players.filter((p) => p.id !== id);
-                        setPlayers(updated);
-                        await savePlayers(updated);
-                    },
-                },
-            ]
-        );
+    const askDeletePlayer = (player) => {
+        setPlayerToDelete(player);
+        setDeleteModalVisible(true);
+    };
+    const confirmDeletePlayer = async () => {
+        if (!playerToDelete) return;
+        const updated = players.filter((p) => p.id !== playerToDelete.id);
+        setPlayers(updated);
+        await savePlayers(updated);
+        setDeleteModalVisible(false);
+        setPlayerToDelete(null);
+    };
+    const cancelDeletePlayer = () => {
+        setDeleteModalVisible(false);
+        setPlayerToDelete(null);
     };
 
     const openStatsModal = (player) => {
@@ -90,21 +114,21 @@ export default function JoueurScreen() {
     };
 
     const renderItem = ({ item }) => (
-        <Pressable onPress={() => openStatsModal(item)} style={styles.playerCard}>
+        <ZoomPressable onPress={() => openStatsModal(item)} style={styles.playerCard}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {item.photoUri ? (
                     <Image source={{ uri: item.photoUri }} style={styles.avatar} />
                 ) : (
-                    <View style={[styles.avatar, { backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center' }]}>
+                    <View style={[styles.avatar, { backgroundColor: item.color || (item.name === 'Equipe bleu' ? '#1976D2' : item.name === 'Equipe rouge' ? '#D32F2F' : '#ccc'), justifyContent: 'center', alignItems: 'center' }]}>
                         <Text style={{ color: '#fff', fontSize: 18 }}>{item.name[0]}</Text>
                     </View>
                 )}
                 <Text style={styles.playerName}>{item.name}</Text>
             </View>
-            <Pressable onPress={() => handleDeletePlayer(item.id)}>
-                <Feather name="trash-2" size={20} color="#900" />
-            </Pressable>
-        </Pressable>
+            <ZoomPressable onPress={() => askDeletePlayer(item)} style={styles.deleteBtn} hitSlop={16}>
+                <Feather name="trash-2" size={24} color="#900" />
+            </ZoomPressable>
+        </ZoomPressable>
     );
 
     return (
@@ -116,9 +140,9 @@ export default function JoueurScreen() {
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingBottom: 100 }}
             />
-            <Pressable style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <ZoomPressable style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <AntDesign name="plus" size={30} color="#fff" />
-            </Pressable>
+            </ZoomPressable>
             {/* Modal ajout joueur */}
             <Modal
                 animationType="slide"
@@ -129,13 +153,15 @@ export default function JoueurScreen() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Text style={styles.modalTitle}>Ajouter un joueur</Text>
-                        <Pressable onPress={pickImage} style={styles.avatarPicker}>
+                        <ZoomPressable onPress={pickImage} style={styles.avatarPicker}>
                             {avatarUri ? (
                                 <Image source={{ uri: avatarUri }} style={styles.avatarLarge} />
                             ) : (
-                                <Text style={{ color: '#203D80' }}>Prendre une photo</Text>
+                                <View style={[styles.avatarLarge, { backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center' }]}>
+                                    <AntDesign name="plus" size={36} color="#fff" />
+                                </View>
                             )}
-                        </Pressable>
+                        </ZoomPressable>
                         <TextInput
                             placeholder="Nom du joueur"
                             value={newName}
@@ -143,12 +169,12 @@ export default function JoueurScreen() {
                             style={styles.input}
                         />
                         <View style={styles.modalButtons}>
-                            <Pressable style={styles.cancelBtn} onPress={() => { setModalVisible(false); setAvatarUri(null); }}>
+                            <ZoomPressable style={styles.cancelBtn} onPress={() => { setModalVisible(false); setAvatarUri(null); }}>
                                 <Text style={styles.btnText}>Annuler</Text>
-                            </Pressable>
-                            <Pressable style={styles.confirmBtn} onPress={handleAddPlayer}>
+                            </ZoomPressable>
+                            <ZoomPressable style={styles.confirmBtn} onPress={handleAddPlayer}>
                                 <Text style={styles.btnText}>Ajouter</Text>
-                            </Pressable>
+                            </ZoomPressable>
                         </View>
                     </View>
                 </View>
@@ -177,14 +203,24 @@ export default function JoueurScreen() {
                                 <Text style={styles.statsLabel}>Gorgées bues : <Text style={styles.statsValue}>{selectedPlayer.beerDrinks ?? selectedPlayer.stats?.beersDrank ?? 0}</Text></Text>
                                 <Text style={styles.statsLabel}>Série de victoire : <Text style={styles.statsValue}>{selectedPlayer.winStreak ?? selectedPlayer.stats?.winStreak ?? 0}</Text></Text>
                                 <Text style={styles.statsLabel}>Meilleure série : <Text style={styles.statsValue}>{selectedPlayer.bestStreak ?? selectedPlayer.stats?.bestStreak ?? 0}</Text></Text>
-                                <Pressable style={styles.closeStatsBtn} onPress={closeStatsModal}>
+                                <ZoomPressable style={styles.closeStatsBtn} onPress={closeStatsModal}>
                                     <Text style={styles.btnText}>Fermer</Text>
-                                </Pressable>
+                                </ZoomPressable>
                             </>
                         )}
                     </View>
                 </View>
             </Modal>
+            {/* Modal suppression joueur */}
+            <ConfirmDeleteModal
+                visible={deleteModalVisible}
+                onCancel={cancelDeletePlayer}
+                onConfirm={confirmDeletePlayer}
+                title="Supprimer ce joueur ?"
+                message="Cette action est irréversible."
+                confirmText="Supprimer"
+                cancelText="Annuler"
+            />
         </View>
     );
 }
@@ -194,6 +230,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFF8EA',
         padding: 20,
+        userSelect: 'none',
     },
     header: {
         fontSize: 26,
@@ -234,6 +271,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.5)',
         paddingHorizontal: 30,
+        userSelect: 'none',
     },
     modalContent: {
         backgroundColor: '#fff',
@@ -243,7 +281,8 @@ const styles = StyleSheet.create({
     },
     modalTitle: {
         fontSize: 20,
-        fontWeight: '600',
+        fontWeight: 'bold',
+        color: '#203D80',
         marginBottom: 15,
         textAlign: 'center',
     },
@@ -310,6 +349,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         minWidth: 260,
         elevation: 10,
+        userSelect: 'none',
     },
     statsName: {
         fontSize: 22,
@@ -332,5 +372,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 10,
         borderRadius: 10,
+    },
+    deleteBtn: {
+        padding: 12,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

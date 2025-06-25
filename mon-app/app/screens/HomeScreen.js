@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
+import CreateGameModal from '../components/CreateGameModal';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -9,7 +10,9 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
 
     const handlePressIn = () => {
         Animated.spring(scaleAnim, {
-            toValue: 0.96,
+            toValue: 0.92, // Dézoom plus marqué
+            speed: 30,
+            bounciness: 8,
             useNativeDriver: true,
         }).start();
     };
@@ -17,8 +20,8 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
     const handlePressOut = () => {
         Animated.spring(scaleAnim, {
             toValue: 1,
-            friction: 3,
-            tension: 40,
+            speed: 20,
+            bounciness: 10,
             useNativeDriver: true,
         }).start();
     };
@@ -39,9 +42,28 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
 };
 
 export default function HomeScreen({ navigation }) {
+    const [modalVisible, setModalVisible] = React.useState(false);
+    const scaleAnim = React.useRef(new Animated.Value(1)).current;
+    const handlePressIn = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 0.92,
+            speed: 30,
+            bounciness: 8,
+            useNativeDriver: true,
+        }).start();
+    };
+    const handlePressOut = () => {
+        Animated.spring(scaleAnim, {
+            toValue: 1,
+            speed: 20,
+            bounciness: 10,
+            useNativeDriver: true,
+        }).start();
+    };
+
     return (
         <View style={styles.container}>
-            <Text style={styles.subtitle}>"Visez, lancez, trinquez – le palet comme on l’aime !"</Text>
+            <Text style={styles.subtitle}>Visez, lancez, trinquez – le palet comme on l’aime !</Text>
 
             <View style={styles.menuGrid}>
                 <MenuButton
@@ -74,14 +96,27 @@ export default function HomeScreen({ navigation }) {
                 />
             </View>
 
-            <Pressable style={styles.newGameButton}>
-                <Image
-                    source={require('../assets/images/logo.png')}
-                    style={styles.logoButton}
-                    resizeMode="contain"
-                />
-                <Text style={styles.newGameText}>Jouer</Text>
-            </Pressable>
+            {/* Le bouton doit être en dehors du flux principal, mais pas en absolute */}
+            <View style={styles.bottomButtonContainer}>
+                <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                    <Pressable
+                        style={styles.newGameButton}
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
+                        onPress={() => setModalVisible(true)}
+                    >
+                        <Image
+                            source={require('../assets/images/logo.png')}
+                            style={styles.logoButton}
+                            resizeMode="contain"
+                        />
+                        {/* Reflet en overlay */}
+                        <View style={styles.refletOverlay} pointerEvents="none" />
+                        <Text style={styles.newGameText}>Jouer</Text>
+                    </Pressable>
+                </Animated.View>
+            </View>
+            <CreateGameModal visible={modalVisible} onClose={() => setModalVisible(false)} />
         </View>
     );
 }
@@ -93,6 +128,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         paddingTop: 40,
+        userSelect: 'none',
     },
     subtitle: {
         fontSize: 16,
@@ -103,11 +139,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        width: screenWidth * 0.9,
+        width: screenWidth * 0.95,
         marginBottom: 40,
     },
     menuButton: {
-        width: screenWidth * 0.35,
+        width: screenWidth * 0.4,
         height: 130,
         margin: 10,
         borderRadius: 20,
@@ -124,20 +160,44 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 16,
     },
+    bottomButtonContainer: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexGrow: 1,
+        flexShrink: 0,
+        flexBasis: 'auto',
+        marginTop: 20,
+        marginBottom: 0,
+        paddingBottom: 50,
+    },
     newGameButton: {
-        position: 'absolute',
-        bottom: 40,
-        backgroundColor: '#444',
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        // On retire position absolute et bottom
+        width: 180,
+        height: 180,
+        borderRadius: 90,
+        backgroundColor: '#B0B4B8', // Gris métallique
+        borderWidth: 7,
+        borderColor: '#718096',
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 5,
         shadowColor: '#000',
-        shadowOpacity: 0.25,
-        shadowOffset: { width: 4, height: 4 },
-        shadowRadius: 8,
+        shadowOffset: { width: 2, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    refletOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '55%',
+        borderTopLeftRadius: 90,
+        borderTopRightRadius: 90,
+        backgroundColor: 'rgba(255,255,255,0.28)',
+        opacity: 0.7,
+        transform: [{ rotate: '-8deg' }],
     },
     newGameText: {
         color: '#FFF',
@@ -146,8 +206,8 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     logoButton: {
-        width: 60,
-        height: 60,
-        borderRadius: 40,
+        width: 90,
+        height: 90,
+        borderRadius: 45,
     },
 });

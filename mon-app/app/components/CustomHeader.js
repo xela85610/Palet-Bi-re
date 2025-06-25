@@ -11,7 +11,7 @@ const CustomHeader = () => {
         <TouchableOpacity onPress={() => navigation.navigate('Accueil')} style={styles.homeBtn}>
           <Ionicons name="home" size={28} color="#6E3B00" />
         </TouchableOpacity>
-        <Text style={styles.title}>Palet & Bière</Text>
+        <Text style={styles.title}>Palets & Bières</Text>
         <Image
           source={require('../assets/images/logo.png')}
           style={styles.logo}
@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
     backgroundColor: '#FFF8EA',
     zIndex: 10,
+    userSelect: 'none',
   },
   homeBtn: {
     padding: 4,
