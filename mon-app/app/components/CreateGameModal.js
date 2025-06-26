@@ -46,16 +46,12 @@ export default function CreateGameModal({ visible, onClose }) {
         }
     }, [visible]);
 
-    // Ouvre la liste de sélection pour le slot 1 ou 2
     const handleAddPlayer = (slot) => setSelecting(slot);
-    // Sélectionne un joueur pour le slot
     const handleSelectPlayer = (player) => {
         if (selecting === 1) setSelected1(player);
         if (selecting === 2) setSelected2(player);
         setSelecting(null);
     };
-    // Correction : si la liste des joueurs est vide, ne pas afficher la FlatList
-    // Correction : si le joueur n'a pas de nom, afficher "?"
     const availablePlayers = (slot) => {
         if (slot === 1 && selected2) return players.filter(p => p.id !== selected2.id);
         if (slot === 2 && selected1) return players.filter(p => p.id !== selected1.id);
@@ -64,12 +60,10 @@ export default function CreateGameModal({ visible, onClose }) {
 
     const handleValidate = async () => {
         if (!(selected1 && selected2)) return;
-        // Créer la game
         const game = createGame([
             { id: selected1.id, name: selected1.nom },
             { id: selected2.id, name: selected2.nom },
         ]);
-        // Sauvegarder la game
         const games = await getGames();
         await saveGames([...games, game]);
         onClose();
@@ -87,38 +81,36 @@ export default function CreateGameModal({ visible, onClose }) {
                 <View style={styles.modalContent}>
                     <Text style={styles.title}>Créer une partie</Text>
                     <View style={styles.row}>
-                        {/* Joueur 1 */}
                         <View style={styles.playerCol}>
-                            <Text style={styles.label}>{selected1 ? selected1.nom : 'Joueur 1'}</Text>
-                            <ZoomPressable style={styles.avatarCircle} onPress={() => handleAddPlayer(1)}>
+                            <Text style={[styles.label, { color: '#203D80' }]}>{selected1 ? selected1.nom : 'Joueur 1'}</Text>
+                            <ZoomPressable style={[styles.avatarCircle, { borderColor: '#203D80' }]} onPress={() => handleAddPlayer(1)}>
                                 {selected1 && selected1.avatar ? (
                                     <Image source={{ uri: selected1.avatar }} style={styles.avatarImg} />
                                 ) : selected1 ? (
-                                    <View style={styles.avatarInitial}><Text style={styles.avatarInitialText}>{selected1.nom[0]}</Text></View>
+                                    <View style={[styles.avatarInitial, { backgroundColor: '#203D80' }]}><Text style={styles.avatarInitialText}>{selected1.nom[0]}</Text></View>
                                 ) : (
                                     <AntDesign name="plus" size={36} color="#203D80" />
                                 )}
                             </ZoomPressable>
                         </View>
-                        {/* VS */}
                         <View style={styles.vsCol}>
-                            <View style={styles.vsBottom}><Text style={styles.vsText}>VS</Text></View>
+                            <View style={styles.vsBottom}>
+                                <Text style={styles.vsText}>VS</Text>
+                            </View>
                         </View>
-                        {/* Joueur 2 */}
                         <View style={styles.playerCol}>
-                            <Text style={styles.label}>{selected2 ? selected2.nom : 'Joueur 2'}</Text>
-                            <ZoomPressable style={styles.avatarCircle} onPress={() => handleAddPlayer(2)}>
+                            <Text style={[styles.label, { color: '#FF0000' }]}>{selected2 ? selected2.nom : 'Joueur 2'}</Text>
+                            <ZoomPressable style={[styles.avatarCircle, { borderColor: '#FF0000' }]} onPress={() => handleAddPlayer(2)}>
                                 {selected2 && selected2.avatar ? (
                                     <Image source={{ uri: selected2.avatar }} style={styles.avatarImg} />
                                 ) : selected2 ? (
-                                    <View style={styles.avatarInitial}><Text style={styles.avatarInitialText}>{selected2.nom[0]}</Text></View>
+                                    <View style={[styles.avatarInitial, { backgroundColor: '#FF0000' }]}><Text style={styles.avatarInitialText}>{selected2.nom[0]}</Text></View>
                                 ) : (
-                                    <AntDesign name="plus" size={36} color="#203D80" />
+                                    <AntDesign name="plus" size={36} color="#FF0000" />
                                 )}
                             </ZoomPressable>
                         </View>
                     </View>
-                    {/* Sélecteur de joueur (modal interne) */}
                     {selecting && (
                         <View style={styles.selectListOverlay}>
                             <View style={styles.selectListBox}>
@@ -185,7 +177,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#203D80',
+        color: '#000',
         marginBottom: 18,
     },
     row: {
@@ -193,7 +185,7 @@ const styles = StyleSheet.create({
         width: '100%',
         justifyContent: 'space-between',
         marginBottom: 28,
-        alignItems: 'center', // Ajouté pour aligner verticalement
+        alignItems: 'center',
     },
     playerCol: {
         flex: 1,
@@ -339,7 +331,7 @@ const styles = StyleSheet.create({
         fontFamily: 'monospace',
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#203D80', // Bleu
+        color: '#000',
         letterSpacing: 2,
         textAlign: 'center',
     },
