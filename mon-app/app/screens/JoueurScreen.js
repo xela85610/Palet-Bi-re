@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    Pressable,
-    TextInput,
-    Modal,
-    Image,
-} from 'react-native';
+import {View, Text, StyleSheet, FlatList, Pressable, TextInput, Modal, Image} from 'react-native';
 import { AntDesign, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { getPlayers, savePlayers } from '../storage/Storage';
 import { createPlayer } from '../models/Player';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
-// Composant pour effet de zoom
 function ZoomPressable({ children, style, ...props }) {
     return (
         <Pressable
             {...props}
             style={({ pressed }) => [
                 style,
-                { transform: [{ scale: pressed ? 0.85 : 1 }] },
+                { transform: [{ scale: pressed ? 0.9 : 1 }] },
             ]}
         >
             {children}
@@ -120,7 +110,7 @@ export default function JoueurScreen() {
                     <Image source={{ uri: item.photoUri }} style={styles.avatar} />
                 ) : (
                     <View style={[styles.avatar, { backgroundColor: item.color || (item.name === 'Equipe bleu' ? '#1976D2' : item.name === 'Equipe rouge' ? '#D32F2F' : '#ccc'), justifyContent: 'center', alignItems: 'center' }]}>
-                        <Text style={{ color: '#fff', fontSize: 18 }}>{item.name[0]}</Text>
+                        <Text style={{ color: '#fff', fontSize: 18 }}>{item.name[0].toUpperCase()}</Text>
                     </View>
                 )}
                 <Text style={styles.playerName}>{item.name}</Text>
@@ -194,7 +184,7 @@ export default function JoueurScreen() {
                                     <Image source={{ uri: selectedPlayer.photoUri }} style={styles.avatarLarge} />
                                 ) : (
                                     <View style={[styles.avatarLarge, { backgroundColor: '#ccc', justifyContent: 'center', alignItems: 'center' }]}>
-                                        <Text style={{ color: '#fff', fontSize: 32 }}>{selectedPlayer.name[0]}</Text>
+                                        <Text style={{ color: '#fff', fontSize: 32 }}>{selectedPlayer.name[0].toUpperCase()}</Text>
                                     </View>
                                 )}
                                 <Text style={styles.statsName}>{selectedPlayer.name}</Text>
@@ -243,10 +233,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#E7F0FF',
+        backgroundColor: '#fff',
         padding: 15,
         marginVertical: 8,
+        marginHorizontal: 8,
         borderRadius: 12,
+        elevation: 4,
     },
     playerName: {
         fontSize: 18,
@@ -316,6 +308,8 @@ const styles = StyleSheet.create({
         color: '#fff',
         textAlign: 'center',
         fontWeight: '600',
+        fontSize: 18,
+
     },
     avatar: {
         width: 40,

@@ -3,12 +3,19 @@ import { TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const CustomHeader = () => {
+const CustomHeader = ({ onHomePress }) => {
   const navigation = useNavigation();
+  const handleHomePress = () => {
+    if (onHomePress) {
+      onHomePress();
+    } else {
+      navigation.navigate('Accueil');
+    }
+  };
   return (
     <View>
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate('Accueil')} style={styles.homeBtn}>
+        <TouchableOpacity onPress={handleHomePress} style={styles.homeBtn}>
           <Ionicons name="home" size={28} color="#6E3B00" />
         </TouchableOpacity>
         <Text style={styles.title}>Palets & Bières</Text>
@@ -30,7 +37,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 45,
+    paddingTop: 40,
     paddingBottom: 6,
     backgroundColor: '#FFF8EA',
     zIndex: 10,
@@ -45,13 +52,12 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: 'bold',
     color: '#6E3B00',
-    marginLeft: 8,
-    marginRight: 8,
+    marginLeft: 10,
+    marginRight: 6,
   },
   logo: {
     width: 44,
     height: 44,
-    marginLeft: 12,
   },
   bottomLine: {
     height: 1,

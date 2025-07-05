@@ -6,7 +6,7 @@ export function createPlayer(name, photoUri = null) {
         photoUri,
         victories: 0,
         gamesPlayed: 0,
-        beerDrinks: 0,
+        sipDrinks: 0,
         winStreak: 0,
         bestStreak: 0,
     };

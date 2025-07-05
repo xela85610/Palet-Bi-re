@@ -24,14 +24,6 @@ export async function loadData(key) {
     }
 }
 
-export async function clearAllData() {
-    try {
-        await AsyncStorage.clear();
-    } catch (error) {
-        console.error('Erreur suppression totale des données :', error);
-    }
-}
-
 export async function getPlayers() {
     return await loadData(KEYS.PLAYERS);
 }
@@ -54,4 +46,10 @@ export async function getRules() {
 
 export async function saveRules(rules) {
     await saveData(KEYS.RULES, rules);
+}
+
+export async function deleteGame(gameId) {
+    const games = await getGames();
+    const filtered = games.filter(g => g.id !== gameId);
+    await saveGames(filtered);
 }

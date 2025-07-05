@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, Pressable, Switch, Modal } from 'react-native';
 import { AntDesign, Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getRules, saveRules } from '../storage/Storage';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { createRule } from '../models/Rule';
-
-const RULES_KEY = 'CUSTOM_RULES';
 
 export default function RegleScreen() {
     const [rules, setRules] = useState([]);
@@ -24,21 +22,21 @@ export default function RegleScreen() {
     }, []);
 
     const loadRules = async () => {
-        const data = await AsyncStorage.getItem(RULES_KEY);
-        if (data && JSON.parse(data).length > 0) {
-            setRules(JSON.parse(data));
+        const data = await getRules();
+        if (data && data.length > 0) {
+            setRules(data);
         } else {
             const defaultRules = [
                 createRule('Égalité', 'Égalité', 1),
             ];
             setRules(defaultRules);
-            await AsyncStorage.setItem(RULES_KEY, JSON.stringify(defaultRules));
+            await saveRules(defaultRules);
         }
     };
 
-    const saveRules = async (newRules) => {
+    const saveRulesToStorage = async (newRules) => {
         setRules(newRules);
-        await AsyncStorage.setItem(RULES_KEY, JSON.stringify(newRules));
+        await saveRules(newRules);
     };
 
     const validateScore = (score) => {
@@ -66,7 +64,7 @@ export default function RegleScreen() {
         }
         const newRule = createRule(score.trim(), title.trim(), sipsValue);
         const updated = [...rules, newRule];
-        saveRules(updated);
+        saveRulesToStorage(updated);
         setScore('');
         setTitle('');
         setSips('');
@@ -83,7 +81,7 @@ export default function RegleScreen() {
 
     const confirmDeleteRule = () => {
         const updated = rules.filter(r => r.id !== ruleToDelete);
-        saveRules(updated);
+        saveRulesToStorage(updated);
         setDeleteModalVisible(false);
         setRuleToDelete(null);
     };
@@ -95,7 +93,7 @@ export default function RegleScreen() {
 
     const toggleRule = (id) => {
         const updated = rules.map(r => r.id === id ? { ...r, active: !r.active } : r);
-        saveRules(updated);
+        saveRulesToStorage(updated);
     };
 
     const renderItem = ({ item: rule }) => (
@@ -147,7 +145,7 @@ export default function RegleScreen() {
                 onRequestClose={() => setModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={[styles.modalContent, { padding: 28 }]}> {/* plus d'espace interne */}
+                    <View style={[styles.modalContent, { padding: 28 }]}>
                         <Text style={[styles.modalTitle, { marginBottom: 28 }]}>Ajouter une règle</Text>
                         <View style={{ width: '100%' }}>
                             {scoreError ? (
@@ -317,6 +315,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         textAlign: 'center',
         fontWeight: '600',
+        fontSize: 18,
     },
     checkbox: {
         width: 22,

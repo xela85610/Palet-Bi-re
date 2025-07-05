@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, StyleSheet, Image, FlatList, Pressable, Animated } from 'react-native';
+import { Modal, View, Text, StyleSheet, Image, FlatList, Pressable, Animated, Dimensions } from 'react-native';
 import { getPlayers } from '../storage/Storage';
 import { AntDesign } from '@expo/vector-icons';
 import { createGame } from '../models/Game';
@@ -87,7 +87,7 @@ export default function CreateGameModal({ visible, onClose }) {
                                 {selected1 && selected1.avatar ? (
                                     <Image source={{ uri: selected1.avatar }} style={styles.avatarImg} />
                                 ) : selected1 ? (
-                                    <View style={[styles.avatarInitial, { backgroundColor: '#203D80' }]}><Text style={styles.avatarInitialText}>{selected1.nom[0]}</Text></View>
+                                    <View style={[styles.avatarInitial, { backgroundColor: '#203D80' }]}><Text style={styles.avatarInitialText}>{selected1.nom[0].toUpperCase()}</Text></View>
                                 ) : (
                                     <AntDesign name="plus" size={36} color="#203D80" />
                                 )}
@@ -104,7 +104,7 @@ export default function CreateGameModal({ visible, onClose }) {
                                 {selected2 && selected2.avatar ? (
                                     <Image source={{ uri: selected2.avatar }} style={styles.avatarImg} />
                                 ) : selected2 ? (
-                                    <View style={[styles.avatarInitial, { backgroundColor: '#FF0000' }]}><Text style={styles.avatarInitialText}>{selected2.nom[0]}</Text></View>
+                                    <View style={[styles.avatarInitial, { backgroundColor: '#FF0000' }]}><Text style={styles.avatarInitialText}>{selected2.nom[0].toUpperCase()}</Text></View>
                                 ) : (
                                     <AntDesign name="plus" size={36} color="#FF0000" />
                                 )}
@@ -118,24 +118,31 @@ export default function CreateGameModal({ visible, onClose }) {
                                 {availablePlayers(selecting).length === 0 ? (
                                     <Text style={{color:'#203D80',marginVertical:20}}>Aucun joueur disponible</Text>
                                 ) : (
-                                <FlatList
-                                    data={availablePlayers(selecting)}
-                                    keyExtractor={item => item.id?.toString()}
-                                    renderItem={({ item }) => (
-                                        <ZoomPressable style={styles.selectListItem} onPress={() => handleSelectPlayer(item)}>
-                                            {item.avatar ? (
-                                                <Image source={{ uri: item.avatar }} style={styles.selectListAvatar} />
-                                            ) : (
-                                                <View style={styles.selectListInitial}><Text style={styles.avatarInitialText}>{item.nom ? item.nom[0] : '?'} </Text></View>
-                                            )}
-                                            <Text style={styles.selectListName}>{item.nom || '?'}</Text>
-                                        </ZoomPressable>
-                                    )}
-                                />
+                                    <FlatList
+                                        data={availablePlayers(selecting)}
+                                        keyExtractor={item => item.id?.toString()}
+                                        style={styles.playerList}
+                                        showsVerticalScrollIndicator={true}
+                                        renderItem={({ item }) => (
+                                            <Pressable style={styles.selectListItem} onPress={() => handleSelectPlayer(item)}>
+                                                {item.avatar ? (
+                                                    <Image source={{ uri: item.avatar }} style={styles.selectListAvatar} />
+                                                ) : (
+                                                    <View style={[styles.selectListInitial, { backgroundColor: item.color || 'grey' }]}>
+                                                        <Text style={styles.selectListInitialText}>{item.nom ? item.nom[0].toUpperCase() : '?'}</Text>
+                                                    </View>
+                                                )}
+                                                <Text style={styles.selectListName}>{item.nom}</Text>
+                                            </Pressable>
+                                        )}
+                                    />
+
                                 )}
-                                <ZoomPressable style={styles.selectListCancel} onPress={() => setSelecting(null)}>
-                                    <Text style={{ color: '#203D80', fontWeight: 'bold' }}>Annuler</Text>
-                                </ZoomPressable>
+                                <View style={styles.buttonRow}>
+                                    <ZoomPressable style={styles.cancelButton} onPress={() => setSelecting(null)}>
+                                        <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 18 }}>Annuler</Text>
+                                    </ZoomPressable>
+                                </View>
                             </View>
                         </View>
                     )}
@@ -219,6 +226,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'grey',
+        overflow: 'hidden',
     },
     avatarInitialText: {
         color: '#fff',
@@ -237,50 +245,60 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     selectListBox: {
-        width: 260,
-        maxHeight: 340,
+        width: 350,
+        height: Dimensions.get('window').height * 0.6,
         backgroundColor: '#fff',
         borderRadius: 14,
-        padding: 16,
+        padding: 24,
         alignItems: 'center',
+    },
+    playerList: {
+        flex: 1,
+        alignSelf: 'stretch',
     },
     selectListTitle: {
         fontWeight: 'bold',
-        fontSize: 16,
-        color: '#203D80',
-        marginBottom: 10,
+        fontSize: 20,
+        color: '#000',
+        marginBottom: 16,
     },
     selectListItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
-        paddingHorizontal: 4,
+        paddingVertical: 14,
+        paddingHorizontal: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
         width: '100%',
     },
     selectListAvatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        marginRight: 12,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        marginRight: 18,
     },
     selectListInitial: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         backgroundColor: 'grey',
+        marginRight: 18,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
+    },
+    selectListInitialText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 22,
     },
     selectListName: {
-        fontSize: 16,
+        fontSize: 18,
         color: '#203D80',
     },
     selectListCancel: {
         marginTop: 10,
         alignSelf: 'center',
+        fontSize: 16,
     },
     buttonRow: {
         flexDirection: 'row',
@@ -307,10 +325,12 @@ const styles = StyleSheet.create({
     cancelText: {
         color: '#333',
         fontWeight: 'bold',
+        fontSize: 18,
     },
     validateText: {
         color: '#fff',
         fontWeight: 'bold',
+        fontSize: 18,
     },
     vsCol: {
         justifyContent: 'flex-end',
