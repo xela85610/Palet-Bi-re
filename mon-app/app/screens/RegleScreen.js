@@ -226,10 +226,12 @@ const styles = StyleSheet.create({
     ruleCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#E7F0FF',
+        backgroundColor: '#fff',
         padding: 15,
         marginVertical: 8,
+        marginHorizontal: 8,
         borderRadius: 12,
+        elevation: 4,
     },
     deleteBtnWrapper: {
         marginLeft: 18,

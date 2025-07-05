@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
-import { getGames, getPlayers, saveGames, deleteGame } from '../storage/Storage';
+import { getGames, getPlayers, saveGames, deleteGame, savePlayers } from '../storage/Storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomHeader from '../components/CustomHeader';
 import { useNavigation } from '@react-navigation/native';
@@ -181,7 +181,6 @@ export default function GameScreen({ route }) {
         else if (redScore >= 13) winnerIndex = 1;
 
         if (winnerIndex !== null) {
-            // Met à jour winner et finalScore dans l'objet game (mais ne sauvegarde pas)
             const loserIndex = winnerIndex === 0 ? 1 : 0;
             const winnerScore = winnerIndex === 0 ? blueScore : redScore;
             const loserScore = winnerIndex === 0 ? redScore : blueScore;
@@ -198,7 +197,6 @@ export default function GameScreen({ route }) {
                 winner: g.players[winnerIndex]?.name || null,
             }));
         } else {
-            // Si le score repasse sous 13, on remet winner et finalScore à null et on ferme la modale
             if (game.winner || game.finalScore) {
                 setWinner(null);
                 setLooser(null);
@@ -216,12 +214,36 @@ export default function GameScreen({ route }) {
         }
     }, [blueScore, redScore]);
 
-    // Bouton Terminer : sauvegarde la partie et affiche les données dans la console
     const handleVictoryConfirm = async () => {
         if (game) {
-            const finishedGame = {
-                ...game,
-            };
+            const finishedGame = {...game,};
+
+            const winnerId = game.players.find(p => p.name === game.winner)?.id;
+            const loserId = game.players.find(p => p.id !== winnerId)?.id;
+            let allPlayers = await getPlayers();
+
+            allPlayers = allPlayers.map(player => {
+                if (player.id === winnerId) {
+                    const newWinStreak = (player.winStreak || 0) + 1;
+                    return {
+                        ...player,
+                        gamesPlayed: (player.gamesPlayed || 0) + 1,
+                        victories: (player.victories || 0) + 1,
+                        winStreak: newWinStreak,
+                        bestStreak: Math.max(newWinStreak, player.bestStreak || 0),
+                    };
+                } else if (player.id === loserId) {
+                    return {
+                        ...player,
+                        gamesPlayed: (player.gamesPlayed || 0) + 1,
+                        winStreak: 0
+                    };
+                } else {
+                    return player;
+                }
+            });
+            await savePlayers(allPlayers);
+
             console.log('GAME TERMINEE:', finishedGame);
             const games = await getGames();
             const others = games.filter(g => g.id !== game.id);

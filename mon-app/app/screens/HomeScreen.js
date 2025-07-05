@@ -81,7 +81,7 @@ export default function HomeScreen({ navigation }) {
                     onPress={() => navigation.navigate('Règles')}
                 />
                 <MenuButton
-                    title="Classement"
+                    title="Classements"
                     color="#FFE899"
                     iconColor="#C27C00"
                     icon={<FontAwesome5 name="trophy" size={36} color="#C27C00" />}
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#B05C00',
         marginBottom: 35,
+        fontWeight: 'bold',
     },
     menuGrid: {
         flexDirection: 'row',
