@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
-import { getGames, getPlayers, saveGames, deleteGame, savePlayers } from '../storage/Storage';
+import { getGames, getPlayers, saveGames, deleteGame, savePlayers, getRules } from '../storage/Storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomHeader from '../components/CustomHeader';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +11,6 @@ export default function GameScreen({ route }) {
     const [scores, setScores] = useState([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]); // 6 bleus, 6 rouges
     const [history, setHistory] = useState([]); // [{index, value}]
 
-    // Score local pour affichage (somme des palets bleus et rouges)
     const [blueScore, setBlueScore] = useState(0);
     const [redScore, setRedScore] = useState(0);
     const [playerAvatars, setPlayerAvatars] = useState([null, null]);
@@ -22,6 +21,19 @@ export default function GameScreen({ route }) {
     const [showVictoryModal, setShowVictoryModal] = useState(false);
     const [winner, setWinner] = useState(null);
     const [looser, setLooser] = useState(null);
+    const [rules, setRules] = useState([]);
+    const [activeRule, setActiveRule] = useState(null);
+    const [ruleModalType, setRuleModalType] = useState(null);
+    const [modalRuleScores, setModalRuleScores] = useState({blue: 0, red: 0});
+
+    useEffect(() => {
+        async function loadRules() {
+            const loadedRules = await getRules();
+            console.log('TOUTES LES rules DU STORAGE:', loadedRules);
+            setRules(loadedRules.filter(r => r.active));
+        }
+        loadRules();
+    }, []);
 
     useEffect(() => {
         setBlueScore(scores.slice(0,6).reduce((a,b)=>a+b,0));
@@ -32,6 +44,12 @@ export default function GameScreen({ route }) {
         async function loadGame() {
             const games = await getGames();
             const found = games.find(g => g.id === route.params?.gameId);
+            if (found && found.players) {
+                found.players = found.players.map(p => ({
+                    ...p,
+                    sips: typeof p.sips === 'number' ? p.sips : 0
+                }));
+            }
             setGame(found);
         }
         loadGame();
@@ -54,12 +72,56 @@ export default function GameScreen({ route }) {
         });
     }, [navigation]);
 
+    function incrementPlayerSips(index, count) {
+        setGame(prev => {
+            const updated = {...prev};
+            updated.players = [...updated.players];
+            updated.players[index] = {...updated.players[index]};
+            updated.players[index].sips += count;
+            return updated;
+        });
+    }
+
+    function scoresMatchPattern(blueScore, redScore, pattern) {
+        const match = /^(\d+)\s*-\s*(\d+)$/.exec(pattern);
+        if (match) {
+            const x = parseInt(match[1], 10);
+            const y = parseInt(match[2], 10);
+            return ((blueScore === x && redScore === y) || (blueScore === y && redScore === x));
+        }
+        if (/^[eé]galité$/i.test(pattern)) {
+            return blueScore === redScore;
+        }
+        if (/^\d+$/.test(pattern)) {
+            return blueScore === parseInt(pattern, 10) || redScore === parseInt(pattern, 10);
+        }
+        return false;
+    }
+
     const handleAddScore = async (index, value) => {
         const newScores = [...scores];
         newScores[index] += value;
         setScores(newScores);
         setHistory([...history, { index, value }]);
-        // Mise à jour du score du joueur dans game + ajout à l'historique
+
+        let newBlueScore = newScores.slice(0,6).reduce((a,b)=>a+b,0);
+        let newRedScore = newScores.slice(6,12).reduce((a,b)=>a+b,0);
+
+        const foundRule = rules.find(rule => rule.active && scoresMatchPattern(newBlueScore, newRedScore, rule.scorePattern));
+        if (foundRule) {
+            setActiveRule(foundRule);
+            if (foundRule.sips === "Gorgées selon le score") {
+                setRuleModalType("scoreBased");
+                setModalRuleScores({blue: newBlueScore, red: newRedScore});
+            } else if (foundRule.scorePattern && /^[eé]galité$/i.test(foundRule.scorePattern)) {
+                setRuleModalType("egalite");
+                setModalRuleScores({blue: 1, red: 1});
+            } else {
+                setRuleModalType("selectPlayer");
+                setModalRuleScores({blue: null, red: null});
+            }
+        }
+
         if (game) {
             let updatedPlayers = [...game.players];
             if (index < 6) {
@@ -67,7 +129,6 @@ export default function GameScreen({ route }) {
             } else {
                 updatedPlayers[1] = { ...updatedPlayers[1], score: newScores.slice(6,12).reduce((a,b)=>a+b,0) };
             }
-            // Ajout du score actuel à l'historique avec les noms des joueurs
             const newHistory = [
                 ...(game.history || []),
                 {
@@ -77,7 +138,6 @@ export default function GameScreen({ route }) {
             ];
             const updatedGame = { ...game, players: updatedPlayers, history: newHistory };
             setGame(updatedGame);
-            // Sauvegarde immédiate
             const games = await getGames();
             const others = games.filter(g => g.id !== game.id);
             await saveGames([...others, updatedGame]);
@@ -91,7 +151,6 @@ export default function GameScreen({ route }) {
         newScores[last.index] -= last.value;
         setScores(newScores);
         setHistory(history.slice(0, -1));
-        // Mise à jour du score du joueur dans game + suppression du dernier score de l'historique
         if (game) {
             let updatedPlayers = [...game.players];
             if (last.index < 6) {
@@ -99,11 +158,9 @@ export default function GameScreen({ route }) {
             } else {
                 updatedPlayers[1] = { ...updatedPlayers[1], score: newScores.slice(6,12).reduce((a,b)=>a+b,0) };
             }
-            // Suppression du dernier score de l'historique
             const newHistory = (game.history || []).slice(0, -1);
             const updatedGame = { ...game, players: updatedPlayers, history: newHistory };
             setGame(updatedGame);
-            // Sauvegarde immédiate
             const games = await getGames();
             const others = games.filter(g => g.id !== game.id);
             await saveGames([...others, updatedGame]);
@@ -115,7 +172,6 @@ export default function GameScreen({ route }) {
     };
     const confirmQuit = async () => {
         setShowQuitModal(false);
-        // Suppression de la partie du stockage
         if (game && game.id) {
             await deleteGame(game.id);
         }
@@ -125,7 +181,6 @@ export default function GameScreen({ route }) {
         setShowQuitModal(false);
     };
 
-    // Explosion rainbow flags
     const explosionAnim = useRef([
         ...Array(7)
     ].map(() => ({
@@ -135,13 +190,13 @@ export default function GameScreen({ route }) {
     }))).current;
 
     const explosionVectors = [
-        { x: 0, y: -80 }, // haut
-        { x: 60, y: -60 }, // haut droite
-        { x: 80, y: 0 }, // droite
-        { x: 60, y: 60 }, // bas droite
-        { x: 0, y: 80 }, // bas
-        { x: -60, y: 60 }, // bas gauche
-        { x: -80, y: 0 }, // gauche
+        { x: 0, y: -80 },
+        { x: 60, y: -60 },
+        { x: 80, y: 0 },
+        { x: 60, y: 60 },
+        { x: 0, y: 80 },
+        { x: -60, y: 60 },
+        { x: -80, y: 0 },
     ];
 
     const triggerExplosion = () => {
@@ -173,7 +228,6 @@ export default function GameScreen({ route }) {
         )).start(() => setShowExplosion(false));
     };
 
-    // Détection de la victoire et gestion winner/finalScore
     useEffect(() => {
         if (!game) return;
         let winnerIndex = null;
@@ -222,6 +276,9 @@ export default function GameScreen({ route }) {
             const loserId = game.players.find(p => p.id !== winnerId)?.id;
             let allPlayers = await getPlayers();
 
+            const sipsById = {};
+            game.players.forEach(p => { sipsById[p.id] = p.sips; });
+
             allPlayers = allPlayers.map(player => {
                 if (player.id === winnerId) {
                     const newWinStreak = (player.winStreak || 0) + 1;
@@ -231,12 +288,14 @@ export default function GameScreen({ route }) {
                         victories: (player.victories || 0) + 1,
                         winStreak: newWinStreak,
                         bestStreak: Math.max(newWinStreak, player.bestStreak || 0),
+                        sipDrinks: player.sipDrinks + sipsById[player.id]
                     };
                 } else if (player.id === loserId) {
                     return {
                         ...player,
                         gamesPlayed: (player.gamesPlayed || 0) + 1,
-                        winStreak: 0
+                        winStreak: 0,
+                        sipDrinks: player.sipDrinks + sipsById[player.id]
                     };
                 } else {
                     return player;
@@ -253,7 +312,6 @@ export default function GameScreen({ route }) {
         navigation.navigate('Accueil');
     };
 
-    // DEBUG : Affiche toutes les games du storage dans la console
     useEffect(() => {
         (async () => {
             const games = await getGames();
@@ -265,7 +323,6 @@ export default function GameScreen({ route }) {
         return <View style={styles.container}><Text>Chargement...</Text></View>;
     }
 
-    // Palets en 2 lignes de 3 pour chaque couleur
     const bluePaletImages = [
         require('../assets/images/b1.png'),
         require('../assets/images/b2.png'),
@@ -424,6 +481,77 @@ export default function GameScreen({ route }) {
                     </View>
                 </LinearGradient>
             </View>
+            {ruleModalType === "scoreBased" && (
+                <View style={styles.victoryModal}>
+                    <View style={styles.victoryContent}>
+                        <Text style={styles.victoryText}>{activeRule.title}</Text>
+                        <Text style={styles.victoryScore}>
+                            {game.players[0].name} boit {modalRuleScores.blue} gorgées{'\n'}
+                            {game.players[1].name} boit {modalRuleScores.red} gorgées
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.victoryConfirmBtn}
+                            onPress={() => {
+                                incrementPlayerSips(0, modalRuleScores.blue);
+                                incrementPlayerSips(1, modalRuleScores.red);
+                                setActiveRule(null); setRuleModalType(null);
+                            }}
+                        >
+                            <Text style={styles.victoryBtnText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+            {ruleModalType === "selectPlayer" && (
+                <View style={styles.victoryModal}>
+                    <View style={styles.victoryContent}>
+                        <Text style={styles.victoryText}>{activeRule.title}</Text>
+                        <Text style={styles.victoryScore}>
+                            {activeRule.sips}
+                        </Text>
+                        <View style={{ flexDirection: 'row', marginTop: 16 }}>
+                            {[0, 1].map(idx => (
+                                <TouchableOpacity
+                                    key={idx}
+                                    style={[
+                                        styles.victoryConfirmBtn,
+                                        { flex: 1, marginLeft: idx === 1 ? 5 : 0, marginRight: idx === 0 ? 5 : 0 }
+                                    ]}
+                                    onPress={() => {
+                                        let sips = activeRule.sips === "Cul sec !" ? 10 : parseInt(activeRule.sips, 10) || 1;
+                                        incrementPlayerSips(idx, sips);
+                                        setActiveRule(null);
+                                        setRuleModalType(null);
+                                    }}
+                                >
+                                    <Text style={styles.victoryBtnText}>{game.players[idx].name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                </View>
+            )}
+            {ruleModalType === "egalite" && (
+                <View style={styles.victoryModal}>
+                    <View style={styles.victoryContent}>
+                        <Text style={styles.victoryText}>{activeRule?.title || "Égalité !"}</Text>
+                        <Text style={styles.victoryScore}>
+                            {game.players[0].name} et {game.players[1].name} boivent chacun 1 gorgée !
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.victoryConfirmBtn}
+                            onPress={() => {
+                                incrementPlayerSips(0, 1);
+                                incrementPlayerSips(1, 1);
+                                setActiveRule(null);
+                                setRuleModalType(null);
+                            }}
+                        >
+                            <Text style={styles.victoryBtnText}>OK</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
@@ -567,7 +695,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        paddingHorizontal: 24, // Ajoute un espacement sur les côtés
+        paddingHorizontal: 24,
     },
     victoryContent: {
         backgroundColor: 'white',

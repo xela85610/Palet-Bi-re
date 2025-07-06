@@ -58,7 +58,7 @@ export default function RegleScreen() {
         let sipsValue = '';
         if (culSec) sipsValue = 'Cul sec !';
         else if (selonScore) sipsValue = 'Gorgées selon le score';
-        else if (sips) sipsValue = `${sips} gorgée(s)`;
+        else if (sips) sipsValue = `${sips}`;
         if (culSec || selonScore) {
             setSips('');
         }

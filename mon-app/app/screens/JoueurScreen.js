@@ -35,8 +35,8 @@ export default function JoueurScreen() {
     }, []);
 
     const loadPlayers = async () => {
-        const data = await getPlayers();
-        if (!data || data.length === 0) {
+        let data = await getPlayers();
+        if (!data || !Array.isArray(data) || data.length === 0) {
             const blue = { ...createPlayer('Equipe bleu', null, { color: '#1976D2' }), id: 'equipe-bleu' };
             await new Promise(res => setTimeout(res, 1));
             const red = { ...createPlayer('Equipe rouge', null, { color: '#D32F2F' }), id: 'equipe-rouge' };
@@ -44,7 +44,11 @@ export default function JoueurScreen() {
             setPlayers(defaultPlayers);
             await savePlayers(defaultPlayers);
         } else {
-            setPlayers(data);
+            const cleanData = data.filter(p => p && typeof p === 'object' && p.id);
+            setPlayers(cleanData);
+            if (cleanData.length !== data.length) {
+                await savePlayers(cleanData);
+            }
         }
     };
 
@@ -125,7 +129,7 @@ export default function JoueurScreen() {
         <View style={styles.container}>
             <Text style={styles.header}>👤 Joueurs</Text>
             <FlatList
-                data={players}
+                data={players.filter(p => p && typeof p === 'object' && p.id)}
                 keyExtractor={(item) => item.id}
                 renderItem={renderItem}
                 contentContainerStyle={{ paddingBottom: 100 }}
@@ -133,7 +137,6 @@ export default function JoueurScreen() {
             <ZoomPressable style={styles.addButton} onPress={() => setModalVisible(true)}>
                 <AntDesign name="plus" size={30} color="#fff" />
             </ZoomPressable>
-            {/* Modal ajout joueur */}
             <Modal
                 animationType="slide"
                 transparent
@@ -169,7 +172,6 @@ export default function JoueurScreen() {
                     </View>
                 </View>
             </Modal>
-            {/* Modal statistiques joueur */}
             <Modal
                 visible={showStatsModal}
                 transparent
@@ -188,11 +190,11 @@ export default function JoueurScreen() {
                                     </View>
                                 )}
                                 <Text style={styles.statsName}>{selectedPlayer.name}</Text>
-                                <Text style={styles.statsLabel}>Parties jouées : <Text style={styles.statsValue}>{selectedPlayer.gamesPlayed ?? selectedPlayer.stats?.gamesPlayed ?? 0}</Text></Text>
-                                <Text style={styles.statsLabel}>Victoires : <Text style={styles.statsValue}>{selectedPlayer.victories ?? selectedPlayer.stats?.gamesWon ?? 0}</Text></Text>
-                                <Text style={styles.statsLabel}>Gorgées bues : <Text style={styles.statsValue}>{selectedPlayer.beerDrinks ?? selectedPlayer.stats?.beersDrank ?? 0}</Text></Text>
-                                <Text style={styles.statsLabel}>Série de victoire : <Text style={styles.statsValue}>{selectedPlayer.winStreak ?? selectedPlayer.stats?.winStreak ?? 0}</Text></Text>
-                                <Text style={styles.statsLabel}>Meilleure série : <Text style={styles.statsValue}>{selectedPlayer.bestStreak ?? selectedPlayer.stats?.bestStreak ?? 0}</Text></Text>
+                                <Text style={styles.statsLabel}>Parties jouées : <Text style={styles.statsValue}>{selectedPlayer.gamesPlayed ?? 0}</Text></Text>
+                                <Text style={styles.statsLabel}>Victoires : <Text style={styles.statsValue}>{selectedPlayer.victories ?? 0}</Text></Text>
+                                <Text style={styles.statsLabel}>Gorgées bues : <Text style={styles.statsValue}>{selectedPlayer.sipDrinks ?? 0}</Text></Text>
+                                <Text style={styles.statsLabel}>Série de victoire : <Text style={styles.statsValue}>{selectedPlayer.winStreak ?? 0}</Text></Text>
+                                <Text style={styles.statsLabel}>Meilleure série : <Text style={styles.statsValue}>{selectedPlayer.bestStreak ?? 0}</Text></Text>
                                 <ZoomPressable style={styles.closeStatsBtn} onPress={closeStatsModal}>
                                     <Text style={styles.btnText}>Fermer</Text>
                                 </ZoomPressable>
@@ -201,7 +203,6 @@ export default function JoueurScreen() {
                     </View>
                 </View>
             </Modal>
-            {/* Modal suppression joueur */}
             <ConfirmDeleteModal
                 visible={deleteModalVisible}
                 onCancel={cancelDeletePlayer}
