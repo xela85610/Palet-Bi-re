@@ -101,26 +101,39 @@ export default function GameScreen({ route }) {
     const handleAddScore = async (index, value) => {
         const newScores = [...scores];
         newScores[index] += value;
-        setScores(newScores);
-        setHistory([...history, { index, value }]);
 
         let newBlueScore = newScores.slice(0,6).reduce((a,b)=>a+b,0);
         let newRedScore = newScores.slice(6,12).reduce((a,b)=>a+b,0);
 
         const foundRule = rules.find(rule => rule.active && scoresMatchPattern(newBlueScore, newRedScore, rule.scorePattern));
+
+        let sipsGiven = [];
+
         if (foundRule) {
             setActiveRule(foundRule);
+
             if (foundRule.sips === "Gorgées selon le score") {
                 setRuleModalType("scoreBased");
                 setModalRuleScores({blue: newBlueScore, red: newRedScore});
+                sipsGiven = [
+                    { playerIdx: 0, sips: newBlueScore },
+                    { playerIdx: 1, sips: newRedScore }
+                ];
             } else if (foundRule.scorePattern && /^[eé]galité$/i.test(foundRule.scorePattern)) {
                 setRuleModalType("egalite");
                 setModalRuleScores({blue: 1, red: 1});
+                sipsGiven = [
+                    { playerIdx: 0, sips: 1 },
+                    { playerIdx: 1, sips: 1 }
+                ];
             } else {
                 setRuleModalType("selectPlayer");
                 setModalRuleScores({blue: null, red: null});
             }
         }
+
+        setScores(newScores);
+        setHistory([...history, { index, value, sipsGiven }]);
 
         if (game) {
             let updatedPlayers = [...game.players];
@@ -147,24 +160,41 @@ export default function GameScreen({ route }) {
     const handleUndo = async () => {
         if (history.length === 0) return;
         const last = history[history.length - 1];
+
+        let updatedPlayers = [...game.players];
+
+        if (last.sipsGiven && last.sipsGiven.length > 0) {
+            last.sipsGiven.forEach(({ playerIdx, sips }) => {
+                updatedPlayers[playerIdx] = {
+                    ...updatedPlayers[playerIdx],
+                    sips: Math.max(0, (updatedPlayers[playerIdx].sips || 0) - (sips || 0))
+                };
+            });
+        }
+
+        // Undo SCORES
         const newScores = [...scores];
         newScores[last.index] -= last.value;
         setScores(newScores);
-        setHistory(history.slice(0, -1));
+
+        // Undo GAME/HISTORY
         if (game) {
-            let updatedPlayers = [...game.players];
             if (last.index < 6) {
                 updatedPlayers[0] = { ...updatedPlayers[0], score: newScores.slice(0,6).reduce((a,b)=>a+b,0) };
             } else {
                 updatedPlayers[1] = { ...updatedPlayers[1], score: newScores.slice(6,12).reduce((a,b)=>a+b,0) };
             }
+
             const newHistory = (game.history || []).slice(0, -1);
             const updatedGame = { ...game, players: updatedPlayers, history: newHistory };
+
             setGame(updatedGame);
             const games = await getGames();
             const others = games.filter(g => g.id !== game.id);
             await saveGames([...others, updatedGame]);
         }
+
+        setHistory(history.slice(0, -1));
     };
 
     const handleHomePress = () => {
@@ -494,8 +524,18 @@ export default function GameScreen({ route }) {
                             onPress={() => {
                                 incrementPlayerSips(0, modalRuleScores.blue);
                                 incrementPlayerSips(1, modalRuleScores.red);
-                                setActiveRule(null); setRuleModalType(null);
-                            }}
+                                setHistory(history => {
+                                    if (!history.length) return history;
+                                    const last = history[history.length - 1];
+                                    return [
+                                        ...history.slice(0, -1),
+                                        { ...last, sipsGiven: [
+                                                { playerIdx: 0, sips: modalRuleScores.blue },
+                                                { playerIdx: 1, sips: modalRuleScores.red }
+                                            ]}
+                                    ];
+                                });
+                                setActiveRule(null); setRuleModalType(null);                            }}
                         >
                             <Text style={styles.victoryBtnText}>OK</Text>
                         </TouchableOpacity>
@@ -506,9 +546,7 @@ export default function GameScreen({ route }) {
                 <View style={styles.victoryModal}>
                     <View style={styles.victoryContent}>
                         <Text style={styles.victoryText}>{activeRule.title}</Text>
-                        <Text style={styles.victoryScore}>
-                            {activeRule.sips}
-                        </Text>
+                        <Text style={styles.victoryScore}>{activeRule.sips}</Text>
                         <View style={{ flexDirection: 'row', marginTop: 16 }}>
                             {[0, 1].map(idx => (
                                 <TouchableOpacity
@@ -520,6 +558,14 @@ export default function GameScreen({ route }) {
                                     onPress={() => {
                                         let sips = activeRule.sips === "Cul sec !" ? 10 : parseInt(activeRule.sips, 10) || 1;
                                         incrementPlayerSips(idx, sips);
+                                        setHistory(history => {
+                                            if (!history.length) return history;
+                                            const last = history[history.length - 1];
+                                            return [
+                                                ...history.slice(0, -1),
+                                                { ...last, sipsGiven: [{ playerIdx: idx, sips }] }
+                                            ];
+                                        });
                                         setActiveRule(null);
                                         setRuleModalType(null);
                                     }}
@@ -543,6 +589,17 @@ export default function GameScreen({ route }) {
                             onPress={() => {
                                 incrementPlayerSips(0, 1);
                                 incrementPlayerSips(1, 1);
+                                setHistory(history => {
+                                    if (!history.length) return history;
+                                    const last = history[history.length - 1];
+                                    return [
+                                        ...history.slice(0, -1),
+                                        { ...last, sipsGiven: [
+                                                { playerIdx: 0, sips: 1 },
+                                                { playerIdx: 1, sips: 1 }
+                                            ]}
+                                    ];
+                                });
                                 setActiveRule(null);
                                 setRuleModalType(null);
                             }}
