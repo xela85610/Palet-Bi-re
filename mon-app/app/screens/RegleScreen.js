@@ -27,7 +27,7 @@ export default function RegleScreen() {
             setRules(data);
         } else {
             const defaultRules = [
-                createRule('Égalité', 'Égalité', 1),
+                createRule('Égalité', 'RENCONTRE !', 1),
             ];
             setRules(defaultRules);
             await saveRules(defaultRules);

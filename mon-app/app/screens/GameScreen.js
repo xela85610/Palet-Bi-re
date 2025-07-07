@@ -663,7 +663,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        marginBottom: 10,
     },
     paletsRow: {
         flexDirection: 'row',
@@ -693,8 +692,8 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     plancheImage: {
-        width: 250,
-        height: 350,
+        width: 240,
+        height: 340,
         resizeMode: 'contain',
     },
     gradientBorder: {

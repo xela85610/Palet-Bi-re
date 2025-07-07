@@ -4,7 +4,7 @@
     "slug": "PaletsBieres",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./app/assets/images/logo.png",
+    "icon": "./app/assets/images/logoApp.png",
     "scheme": "PaletsBieres",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,17 +14,20 @@
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
+        "expo-splash-screen"
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "41b9ebf2-f83b-4361-939d-d48c78290f6d"
+      }
+    },
+    "android": {
+      "package": "com.xela85.PaletsBieres"
     }
   }
 }
