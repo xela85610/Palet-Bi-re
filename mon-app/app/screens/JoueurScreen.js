@@ -127,7 +127,7 @@ export default function JoueurScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>👤 Joueurs</Text>
+            <Text style={styles.header}>Joueurs</Text>
             <FlatList
                 data={players.filter(p => p && typeof p === 'object' && p.id)}
                 keyExtractor={(item) => item.id}
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 26,
         fontWeight: 'bold',
-        color: '#6E3B00',
+        color: '#000',
         marginBottom: 20,
         textAlign: 'center',
     },

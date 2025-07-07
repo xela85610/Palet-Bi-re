@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { getPlayers } from '../storage/Storage'; // Vérifiez que ce chemin est correct
+import {View, Text, FlatList, StyleSheet, Image, ActivityIndicator, Pressable} from 'react-native';
+import { getPlayers } from '../storage/Storage';
 
 const ClassementScreen = () => {
     const [players, setPlayers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('gamesPlayed'); // État pour l'onglet actif
+    const [activeTab, setActiveTab] = useState('gamesPlayed');
 
     useEffect(() => {
         const fetchPlayers = async () => {
@@ -60,25 +60,27 @@ const ClassementScreen = () => {
 
     return (
         <View style={styles.container}>
+            <Text style={styles.header}>Classements</Text>
             <View style={styles.tabContainer}>
-                <TouchableOpacity
+                <Pressable
                     onPress={() => switchTab('gamesPlayed')}
                     style={[styles.tab, activeTab === 'gamesPlayed' && styles.activeTab]}
                 >
-                    <Text style={activeTab === 'gamesPlayed' ? styles.activeTabText : styles.tabText}>Parties Jouées</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                    <Text style={activeTab === 'gamesPlayed' ? styles.activeTabText : styles.tabText}>Parties
+                        Jouées</Text>
+                </Pressable>
+                <Pressable
                     onPress={() => switchTab('victories')}
                     style={[styles.tab, activeTab === 'victories' && styles.activeTab]}
                 >
                     <Text style={activeTab === 'victories' ? styles.activeTabText : styles.tabText}>Victoires</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                     onPress={() => switchTab('sipDrinks')}
                     style={[styles.tab, activeTab === 'sipDrinks' && styles.activeTab]}
                 >
                     <Text style={activeTab === 'sipDrinks' ? styles.activeTabText : styles.tabText}>Gorgées bues</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             <View style={styles.playersContainer}>
@@ -98,6 +100,14 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFF8EA',
         padding: 10,
+        userSelect: 'none',
+    },
+    header: {
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 10,
+        textAlign: 'center',
     },
     loadingContainer: {
         flex: 1,
@@ -106,6 +116,7 @@ const styles = StyleSheet.create({
     },
     list: {
         padding: 10,
+        flexGrow: 1,
     },
     playerRow: {
         flexDirection: 'row',
@@ -155,7 +166,6 @@ const styles = StyleSheet.create({
     tabContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        backgroundColor: 'transparent',
         marginTop: 15,
     },
     tab: {
@@ -165,8 +175,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#BFA68B',
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
-        marginHorizontal: 3,
+        marginHorizontal: 5,
         marginBottom: -10,
+        overflow: 'hidden', // Pour le bord d'arrondi invers
     },
     activeTab: {
         backgroundColor: '#E8CBAF',
@@ -178,12 +189,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#E8CBAF',
         borderTopWidth: 0,
         borderRadius: 12,
-        marginHorizontal: 3,
+        marginHorizontal: 5,
     },
     tabText: {
         fontSize: 14,
         color: '#fff',
         fontWeight: 'bold',
+        marginBottom: 10,
     },
     activeTabText: {
         fontSize: 14,

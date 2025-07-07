@@ -8,6 +8,7 @@ import { createRule } from '../models/Rule';
 export default function RegleScreen() {
     const [rules, setRules] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
+    const [infoModalVisible, setInfoModalVisible] = useState(false);
     const [score, setScore] = useState('');
     const [title, setTitle] = useState('');
     const [sips, setSips] = useState('');
@@ -103,8 +104,8 @@ export default function RegleScreen() {
                 <Text style={styles.ruleTitle}>{rule.title}</Text>
                 <Text style={styles.ruleSips}>{
                     rule.sips === 'Cul sec !' ? 'Cul sec !' :
-                    rule.sips === 'Gorgées selon le score' ? 'Gorgées selon score' :
-                    rule.sips ? `${rule.sips} Gorgée(s)` : 'Gorgées selon score'
+                        rule.sips === 'Gorgées selon le score' ? 'Gorgées selon score' :
+                            rule.sips ? `${rule.sips} Gorgée(s)` : 'Gorgées selon score'
                 }</Text>
             </View>
             <Switch value={rule.active} onValueChange={() => toggleRule(rule.id)} />
@@ -118,7 +119,15 @@ export default function RegleScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.header}>Règles personnalisées</Text>
+            <View style={styles.headerContainer}>
+                <Text style={styles.header}>Règles personnalisées</Text>
+                    <Pressable
+                        style={styles.infoIcon}
+                        onPress={() => setInfoModalVisible(true)}
+                    >
+                        <Text style={styles.infoText}>i</Text>
+                    </Pressable>
+            </View>
             <Text style={styles.subtitle}>Vous pouvez activer ou non les règles pour les parties.</Text>
             <FlatList
                 data={rules}
@@ -199,6 +208,22 @@ export default function RegleScreen() {
                     </View>
                 </View>
             </Modal>
+            <Modal
+                animationType="slide"
+                transparent
+                visible={infoModalVisible}
+                onRequestClose={() => setInfoModalVisible(false)}
+            >
+                <View style={styles.modalInfo}>
+                    <View style={[styles.modalInfoContent, { padding: 28 }]}>
+                        <Text style={styles.modalTitle}>Explication des règles personnalisées</Text>
+                        <Text style={styles.modalText}>Ici, vous pouvez ajouter ce qu'on appelle des 'règles', c'est à dire, à tel score il se passe tel chose. Par exemple si le score est de 8-5, celui qui a 8 boit 8 gorgées et celui qui à 5 boit 5 gorgées ou encore, à 4-1, le premier qui dit le mot "Poésie" donne 1 gorgée à l'autre ect.</Text>
+                        <ZoomPressable style={styles.confirmInfoBtn} onPress={() => setInfoModalVisible(false)}>
+                            <Text style={styles.confirmInfoBtn}>Fermer</Text>
+                        </ZoomPressable>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -210,11 +235,17 @@ const styles = StyleSheet.create({
         padding: 20,
         userSelect: 'none',
     },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 15,
+    },
     header: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#203D80',
-        marginBottom: 20,
+        color: '#000',
+        marginBottom: 5,
         textAlign: 'center',
     },
     subtitle: {
@@ -283,7 +314,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#203D80',
+        color: '#000',
         marginBottom: 15,
         textAlign: 'center',
     },
@@ -339,9 +370,52 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 3,
     },
+    modalInfo: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        paddingHorizontal: 30,
+        userSelect: 'none',
+    },
+    modalInfoContent: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 15,
+        elevation: 10,
+    },
+    modalText: {
+        fontSize: 18,
+        color: '#000',
+        marginTop: 10,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    infoIcon: {
+        width: 20,
+        height: 20,
+        borderRadius: 15,
+        backgroundColor: '#BFA68B',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10,
+    },
+    infoText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    confirmInfoBtn: {
+        backgroundColor: '#203D80',
+        color: '#fff',
+        textAlign: 'center',
+        marginVertical: 10,
+        marginHorizontal: 80,
+        fontSize: 18,
+        borderRadius: 10,
+    },
 });
 
-// Composant pour effet de zoom
 function ZoomPressable({ children, style, ...props }) {
     return (
         <Pressable
