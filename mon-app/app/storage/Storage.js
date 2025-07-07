@@ -53,3 +53,12 @@ export async function deleteGame(gameId) {
     const filtered = games.filter(g => g.id !== gameId);
     await saveGames(filtered);
 }
+
+export async function clearStorage() {
+    try {
+        await AsyncStorage.clear();
+        console.log("Tous les données ont été supprimées du stockage.");
+    } catch (error) {
+        console.error('Erreur lors de la suppression des données :', error);
+    }
+}

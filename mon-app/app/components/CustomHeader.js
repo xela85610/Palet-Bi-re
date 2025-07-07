@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { clearStorage } from '../storage/Storage';
 
 const CustomHeader = ({ onHomePress }) => {
   const navigation = useNavigation();
@@ -12,21 +13,27 @@ const CustomHeader = ({ onHomePress }) => {
       navigation.navigate('Accueil');
     }
   };
+
+  const handleClearStorage = async () => {
+    await clearStorage();
+  };
+
   return (
-    <View>
-      <View style={styles.container}>
-        <TouchableOpacity onPress={handleHomePress} style={styles.homeBtn}>
-          <Ionicons name="home" size={28} color="#6E3B00" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Palets & Bières</Text>
-        <Image
-          source={require('../assets/images/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+      <View>
+        <View style={styles.container}>
+          <TouchableOpacity onPress={handleHomePress} style={styles.homeBtn}>
+            <Ionicons name="home" size={28} color="#6E3B00" />
+          </TouchableOpacity>
+            <Text style={styles.title}>Palets & Bières</Text>
+          <Image
+              source={require('../assets/images/logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+          />
+        </View>
+        <View style={styles.bottomLine} />
       </View>
-      <View style={styles.bottomLine} />
-    </View>
+
   );
 };
 
