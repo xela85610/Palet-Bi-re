@@ -172,12 +172,10 @@ export default function GameScreen({ route }) {
             });
         }
 
-        // Undo SCORES
         const newScores = [...scores];
         newScores[last.index] -= last.value;
         setScores(newScores);
 
-        // Undo GAME/HISTORY
         if (game) {
             if (last.index < 6) {
                 updatedPlayers[0] = { ...updatedPlayers[0], score: newScores.slice(0,6).reduce((a,b)=>a+b,0) };
@@ -514,13 +512,14 @@ export default function GameScreen({ route }) {
             {ruleModalType === "scoreBased" && (
                 <View style={styles.victoryModal}>
                     <View style={styles.victoryContent}>
-                        <Text style={styles.victoryText}>{activeRule.title}</Text>
+                        <Text style={styles.scoreTitre}>{activeRule.title}</Text>
+                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
                         <Text style={styles.victoryScore}>
-                            {game.players[0].name} boit {modalRuleScores.blue} gorgées{'\n'}
-                            {game.players[1].name} boit {modalRuleScores.red} gorgées
+                            <Text style={{color: '#1856A5'}}>{game.players[0].name}</Text> boit {modalRuleScores.blue} gorgées{'\n'}
+                            <Text style={{color: '#D33E43'}}>{game.players[1].name}</Text> boit {modalRuleScores.red} gorgées
                         </Text>
                         <TouchableOpacity
-                            style={styles.victoryConfirmBtn}
+                            style={styles.scoreBtn}
                             onPress={() => {
                                 incrementPlayerSips(0, modalRuleScores.blue);
                                 incrementPlayerSips(1, modalRuleScores.red);
@@ -537,7 +536,7 @@ export default function GameScreen({ route }) {
                                 });
                                 setActiveRule(null); setRuleModalType(null);                            }}
                         >
-                            <Text style={styles.victoryBtnText}>OK</Text>
+                            <Text style={styles.victoryBtnText}>C'est bu !</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -545,15 +544,21 @@ export default function GameScreen({ route }) {
             {ruleModalType === "selectPlayer" && (
                 <View style={styles.victoryModal}>
                     <View style={styles.victoryContent}>
-                        <Text style={styles.victoryText}>{activeRule.title}</Text>
-                        <Text style={styles.victoryScore}>{activeRule.sips}</Text>
-                        <View style={{ flexDirection: 'row', marginTop: 16 }}>
+                        <Text style={styles.scoreTitre}>{activeRule.title}</Text>
+                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
+                        <Text style={styles.victoryScore}>{activeRule.sips}{'\n'}pour :</Text>
+                        <View style={{ flexDirection: 'row', marginTop: 4 }}>
                             {[0, 1].map(idx => (
                                 <TouchableOpacity
                                     key={idx}
                                     style={[
-                                        styles.victoryConfirmBtn,
-                                        { flex: 1, marginLeft: idx === 1 ? 5 : 0, marginRight: idx === 0 ? 5 : 0 }
+                                        styles.scoreJoueurBtn,
+                                        {
+                                            flex: 1,
+                                            marginLeft: idx === 1 ? 5 : 0,
+                                            marginRight: idx === 0 ? 5 : 0,
+                                            backgroundColor: idx === 0 ? "#1856A5" : "#D33E43"
+                                        }
                                     ]}
                                     onPress={() => {
                                         let sips = activeRule.sips === "Cul sec !" ? 10 : parseInt(activeRule.sips, 10) || 1;
@@ -580,12 +585,13 @@ export default function GameScreen({ route }) {
             {ruleModalType === "egalite" && (
                 <View style={styles.victoryModal}>
                     <View style={styles.victoryContent}>
-                        <Text style={styles.victoryText}>{activeRule?.title || "Égalité !"}</Text>
+                        <Text style={styles.scoreTitre}>{activeRule?.title || "RENCONTRE !"}</Text>
+                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
                         <Text style={styles.victoryScore}>
-                            {game.players[0].name} et {game.players[1].name} boivent chacun 1 gorgée !
+                            Tout le monde boit la gorgée de l'amitié !
                         </Text>
                         <TouchableOpacity
-                            style={styles.victoryConfirmBtn}
+                            style={styles.scoreBtn}
                             onPress={() => {
                                 incrementPlayerSips(0, 1);
                                 incrementPlayerSips(1, 1);
@@ -604,7 +610,7 @@ export default function GameScreen({ route }) {
                                 setRuleModalType(null);
                             }}
                         >
-                            <Text style={styles.victoryBtnText}>OK</Text>
+                            <Text style={styles.victoryBtnText}>C'est bu !</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -769,12 +775,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
-        color: '#203D80',
+        color: '#000',
     },
     victoryScore: {
         fontSize: 20,
         marginBottom: 20,
-        color: '#203D80',
+        color: '#000',
+        textAlign: 'center',
     },
     victoryCancelBtn: {
         backgroundColor: '#999',
@@ -798,4 +805,35 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 18,
     },
+    scoreTitre: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    scoreText: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#000',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    scoreJoueurBtn: {
+        padding: 10,
+        borderRadius: 10,
+        flex: 1,
+        width: '160px',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+    },
+    scoreBtn: {
+        backgroundColor: '#999',
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '50%',
+    }
 });
