@@ -18,8 +18,6 @@ const ClassementScreen = () => {
     }, []);
 
     const sortedPlayers = [...players].sort((a, b) => {
-        console.log("tous les joueurs" + players);
-        console.log(players);
 
         if (activeTab === 'sipDrinks') {
             return b.sipDrinks - a.sipDrinks;
@@ -27,9 +25,6 @@ const ClassementScreen = () => {
             return b[activeTab] - a[activeTab];
         }
     });
-    console.log("trié" + sortedPlayers);
-    console.log(sortedPlayers);
-
 
     const renderItem = ({ item, index }) => (
         <View style={styles.playerRow}>
@@ -177,7 +172,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 12,
         marginHorizontal: 5,
         marginBottom: -10,
-        overflow: 'hidden', // Pour le bord d'arrondi invers
     },
     activeTab: {
         backgroundColor: '#E8CBAF',

@@ -219,7 +219,7 @@ export default function RegleScreen() {
                         <Text style={styles.modalTitle}>Explication des règles personnalisées</Text>
                         <Text style={styles.modalText}>Ici, vous pouvez ajouter ce qu'on appelle des 'règles', c'est à dire, à tel score il se passe tel chose. Par exemple si le score est de 8-5, celui qui a 8 boit 8 gorgées et celui qui à 5 boit 5 gorgées ou encore, à 4-1, le premier qui dit le mot "Poésie" donne 1 gorgée à l'autre ect.</Text>
                         <ZoomPressable style={styles.confirmInfoBtn} onPress={() => setInfoModalVisible(false)}>
-                            <Text style={styles.confirmInfoBtn}>Fermer</Text>
+                            <Text style={styles.confirmInfoText}>OK</Text>
                         </ZoomPressable>
                     </View>
                 </View>
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         color: '#000',
-        marginBottom: 5,
+        marginBottom: 3,
         textAlign: 'center',
     },
     subtitle: {
@@ -407,13 +407,18 @@ const styles = StyleSheet.create({
     },
     confirmInfoBtn: {
         backgroundColor: '#203D80',
-        color: '#fff',
         textAlign: 'center',
-        marginVertical: 10,
-        marginHorizontal: 80,
+        marginHorizontal: 90,
         fontSize: 18,
         borderRadius: 10,
     },
+    confirmInfoText: {
+        color: '#fff',
+        padding: 10,
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    }
 });
 
 function ZoomPressable({ children, style, ...props }) {

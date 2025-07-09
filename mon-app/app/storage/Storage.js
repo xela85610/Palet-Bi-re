@@ -57,7 +57,6 @@ export async function deleteGame(gameId) {
 export async function clearStorage() {
     try {
         await AsyncStorage.clear();
-        console.log("Tous les données ont été supprimées du stockage.");
     } catch (error) {
         console.error('Erreur lors de la suppression des données :', error);
     }

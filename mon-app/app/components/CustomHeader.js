@@ -2,10 +2,11 @@ import React from 'react';
 import { TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { clearStorage } from '../storage/Storage';
 
-const CustomHeader = ({ onHomePress }) => {
+const CustomHeader = ({ onHomePress, onCreditsPress }) => {
+
   const navigation = useNavigation();
+
   const handleHomePress = () => {
     if (onHomePress) {
       onHomePress();
@@ -14,8 +15,12 @@ const CustomHeader = ({ onHomePress }) => {
     }
   };
 
-  const handleClearStorage = async () => {
-    await clearStorage();
+  const handleCreditsPress = () => {
+    if (onCreditsPress) {
+      onCreditsPress();
+    } else {
+      navigation.navigate('Crédits');
+    }
   };
 
   return (
@@ -25,11 +30,13 @@ const CustomHeader = ({ onHomePress }) => {
             <Ionicons name="home" size={28} color="#6E3B00" />
           </TouchableOpacity>
             <Text style={styles.title}>Palets & Bières</Text>
-          <Image
-              source={require('../assets/images/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-          />
+          <TouchableOpacity onPress={handleCreditsPress}>
+            <Image
+                  source={require('../assets/images/logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+              />
+          </TouchableOpacity>
         </View>
         <View style={styles.bottomLine} />
       </View>

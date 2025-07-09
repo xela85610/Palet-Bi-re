@@ -5,6 +5,7 @@ import RegleScreen from './screens/RegleScreen';
 import ClassementScreen from './screens/./ClassementScreen';
 import HistoriqueScreen from './screens/HistoriqueScreen';
 import GameScreen from "./screens/GameScreen";
+import CreditScreen from './screens/CreditScreen';
 import CustomHeader from './components/CustomHeader';
 
 import { LogBox } from 'react-native';
@@ -25,10 +26,11 @@ export default function Index() {
           initialRouteName="Accueil"
           screenOptions={{
             header: () => <CustomHeader />,
-            animation: 'none', // Désactive l'animation de transition
+            animation: 'none',
           }}
         >
           <Stack.Screen name="Accueil" component={HomeScreen} />
+          <Stack.Screen name="Crédits" component={CreditScreen} />
           <Stack.Screen name="Joueurs" component={JoueurScreen} />
           <Stack.Screen name="Règles" component={RegleScreen} />
           <Stack.Screen name="Classement" component={ClassementScreen} />

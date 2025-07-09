@@ -10,7 +10,7 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
 
     const handlePressIn = () => {
         Animated.spring(scaleAnim, {
-            toValue: 0.92, // Dézoom plus marqué
+            toValue: 0.92,
             speed: 30,
             bounciness: 8,
             useNativeDriver: true,
@@ -96,7 +96,6 @@ export default function HomeScreen({ navigation }) {
                 />
             </View>
 
-            {/* Le bouton doit être en dehors du flux principal, mais pas en absolute */}
             <View style={styles.bottomButtonContainer}>
                 <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                     <Pressable
@@ -110,7 +109,6 @@ export default function HomeScreen({ navigation }) {
                             style={styles.logoButton}
                             resizeMode="contain"
                         />
-                        {/* Reflet en overlay */}
                         <View style={styles.refletOverlay} pointerEvents="none" />
                         <Text style={styles.newGameText}>Jouer</Text>
                     </Pressable>
@@ -173,11 +171,10 @@ const styles = StyleSheet.create({
         paddingBottom: 50,
     },
     newGameButton: {
-        // On retire position absolute et bottom
         width: 180,
         height: 180,
         borderRadius: 90,
-        backgroundColor: '#B0B4B8', // Gris métallique
+        backgroundColor: '#B0B4B8',
         borderWidth: 7,
         borderColor: '#718096',
         justifyContent: 'center',

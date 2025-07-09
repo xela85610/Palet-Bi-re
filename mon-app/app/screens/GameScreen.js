@@ -29,7 +29,6 @@ export default function GameScreen({ route }) {
     useEffect(() => {
         async function loadRules() {
             const loadedRules = await getRules();
-            console.log('TOUTES LES rules DU STORAGE:', loadedRules);
             setRules(loadedRules.filter(r => r.active));
         }
         loadRules();
@@ -331,7 +330,6 @@ export default function GameScreen({ route }) {
             });
             await savePlayers(allPlayers);
 
-            console.log('GAME TERMINEE:', finishedGame);
             const games = await getGames();
             const others = games.filter(g => g.id !== game.id);
             await saveGames([...others, finishedGame]);
@@ -339,13 +337,6 @@ export default function GameScreen({ route }) {
         setShowVictoryModal(false);
         navigation.navigate('Accueil');
     };
-
-    useEffect(() => {
-        (async () => {
-            const games = await getGames();
-            console.log('TOUTES LES GAMES DU STORAGE:', games);
-        })();
-    }, []);
 
     if (!game) {
         return <View style={styles.container}><Text>Chargement...</Text></View>;
