@@ -67,13 +67,14 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#203D80',
-        marginBottom: 8,
+        color: '#000',
+        marginBottom: 12,
         textAlign: 'center',
     },
     message: {
-        color: '#900',
-        marginBottom: 16,
+        fontSize: 16,
+        color: '#FF0000',
+        marginBottom: 20,
         textAlign: 'center',
     },
     buttons: {
