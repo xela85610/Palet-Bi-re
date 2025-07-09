@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
     },
     tabText: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#fff',
         fontWeight: 'bold',
         marginBottom: 10,
     },
     activeTabText: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#000',
         fontWeight: 'bold',
     },

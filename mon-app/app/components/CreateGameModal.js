@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
         elevation: 8,
     },
     title: {
-        fontSize: 20,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#000',
         marginBottom: 18,

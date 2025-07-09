@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
         color: '#000',
         marginTop: 10,
         marginBottom: 20,
-        textAlign: 'center',
+        textAlign: 'justify',
     },
     infoIcon: {
         width: 20,

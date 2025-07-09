@@ -54,10 +54,14 @@ export default function CreditScreen() {
                 />
             </View>
             <View style={styles.footer}>
-                <Link href={"https://github.com/xela85610/Palet-Bi-re"} style={styles.gitLink}>
-                    <Image source={require('../assets/images/github.png')} style={styles.gitImg}/>
-                    GitHub
-                </Link>
+                <View style={styles.gitLink}>
+                    <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
+                        <Image source={require('../assets/images/github.png')} style={styles.gitImg}/>
+                    </Link>
+                    <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
+                        <Text style={styles.gitTxt}>GitHub</Text>
+                    </Link>
+                </View>
                 <Text style={styles.footerTxt}>© 2025 Axel Charrier | Projet open-source</Text>
             </View>
         </View>
@@ -112,30 +116,29 @@ const styles = StyleSheet.create({
         userSelect: 'none',
     },
     deleteDataTxt: {
-        fontSize: 16,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#fff',
         textAlign: 'center',
-        padding: 8,
+        padding: 10,
         userSelect: 'none',
     },
     footerTxt: {
         textAlign: 'center',
         userSelect: 'none',
     },
+    gitLink: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'center',
+        userSelect: 'none',
+        marginBottom: 20,
+    },
     gitImg: {
         width: 30,
         height: 30,
         resizeMode: 'contain',
-        margin: 10,
         userSelect: 'none',
     },
-    gitLink: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        userSelect: 'none',
-    },
-
 });

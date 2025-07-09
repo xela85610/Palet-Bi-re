@@ -401,25 +401,25 @@ export default function GameScreen({ route }) {
                 <View style={styles.victoryModal}>
                     <View style={styles.modaleInfo}>
                         <View style={styles.infoModale}>
-                            <View style={styles.infoTitre}>Comment jouer ?</View>
-                            <View style={styles.sectionTxt}>1. Compter les points</View>
-                                <View style={styles.infoTxt}>
+                            <Text style={styles.infoTitre}>Comment jouer ?</Text>
+                            <Text style={styles.sectionTxt}>1. Compter les points</Text>
+                                <Text style={styles.infoTxt}>
                                     Pour chaque équipe, des palets sont identifiés de 1 à 6.
                                     Lorsque votre équipe marque un score, il suffit d’appuyer sur le palet correspondant à son numéro (rouge pour l’équipe rouge, bleu pour l’équipe bleue). Le score de l’équipe s’incrémente automatiquement.
-                                </View>
-                            <View style={styles.sectionTxt}>2. Corriger une erreur</View>
-                                <View style={styles.infoTxt}>
+                                </Text>
+                            <Text style={styles.sectionTxt}>2. Corriger une erreur</Text>
+                                <Text style={styles.infoTxt}>
                                     Si une erreur s’est produite dans le comptage des points (miss click), utilisez le bouton “Erreur de zouzou” en bas de l’écran pour annuler la dernière action et corriger le score.
-                                </View>
-                            <View style={styles.sectionTxt}>3. Règles spéciales</View>
-                                <View style={styles.infoTxt}>
+                                </Text>
+                            <Text style={styles.sectionTxt}>3. Règles spéciales</Text>
+                                <Text style={styles.infoTxt}>
                                     Certaines règles peuvent être paramétrées et activées avant la partie dans la page "Règles".
                                     Dès que le score d’une équipe atteint l’une des valeurs paramétrées, la règle correspondante s’affichera automatiquement dans une popup, indiquant le nombre de gorgées à boire.
-                                </View>
-                            <View style={styles.sectionTxt}>4. Gagner la partie</View>
-                                <View style={styles.infoTxt}>
+                                </Text>
+                            <Text style={styles.sectionTxt}>4. Gagner la partie</Text>
+                                <Text style={styles.infoTxt}>
                                     La première équipe à atteindre 13 points remporte la victoire !
-                                </View>
+                                </Text>
                         </View>
                         <TouchableOpacity style={styles.commencerBtn} onPress={() => setModaleInfo(false)}><Text style={styles.commencerTxt}>Commencer la partie</Text></TouchableOpacity>
                     </View>
@@ -860,15 +860,15 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         backgroundColor: 'white',
         borderRadius: 12,
-        paddingVertical: 30,
-        paddingHorizontal: 38,
+        paddingVertical: 25,
+        paddingHorizontal: 30,
         alignItems: 'center',
-        width: '90%',
-        height: '90%',
+        width: '100%',
+        height: '94%',
         elevation: 5,
     },
     infoModale: {
-        flex: 10,
+        flex: 12,
     },
     infoTitre: {
         marginTop: 10,
@@ -877,11 +877,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     sectionTxt: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         textAlign: 'left',
-        marginTop: 20,
-        marginBottom: 10,
+        marginTop: 15,
+        marginBottom: 5,
     },
     infoTxt: {
         fontSize: 18,
