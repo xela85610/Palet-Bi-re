@@ -24,6 +24,7 @@ export default function ConfirmDeleteModal({
     confirmText = 'Supprimer',
     cancelText = 'Annuler',
 }) {
+
     return (
         <Modal
             visible={visible}
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
         padding: 24,
         width: 320,
         alignItems: 'center',
+        elevation: 8,
     },
     title: {
         fontSize: 20,

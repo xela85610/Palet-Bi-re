@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Animated } from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity, Animated, Modal} from 'react-native';
 import { getGames, getPlayers, saveGames, deleteGame, savePlayers, getRules } from '../storage/Storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import CustomHeader from '../components/CustomHeader';
 import { useNavigation } from '@react-navigation/native';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import {Audio} from "expo-av";
 
 export default function GameScreen({ route }) {
     const [game, setGame] = useState(null);
@@ -72,6 +73,12 @@ export default function GameScreen({ route }) {
         });
     }, [navigation]);
 
+    useEffect(() => {
+        if(ruleModalType === "scoreBased" || ruleModalType === "egalite" || ruleModalType === "selectPlayer") {
+            playSound(1);
+        }
+    }, [ruleModalType]);
+
     function incrementPlayerSips(index, count) {
         setGame(prev => {
             const updated = {...prev};
@@ -80,6 +87,22 @@ export default function GameScreen({ route }) {
             updated.players[index].sips += count;
             return updated;
         });
+    }
+
+    async function playSound(soundIndex) {
+        const sounds = [
+            require('../assets/sounds/gay.mp3'),
+            require('../assets/sounds/beer.mp3'),
+            require('../assets/sounds/palet.mp3'),
+        ];
+
+        if (soundIndex < 0 || soundIndex >= sounds.length) {
+            console.error('Index de son invalide');
+            return;
+        }
+
+        const { sound } = await Audio.Sound.createAsync(sounds[soundIndex]);
+        await sound.playAsync();
     }
 
     function scoresMatchPattern(blueScore, redScore, pattern) {
@@ -100,6 +123,14 @@ export default function GameScreen({ route }) {
 
     const handleAddScore = async (index, value) => {
         const newScores = [...scores];
+        const playerCurrentScore = index < 6
+            ? newScores.slice(0, 6).reduce((a, b) => a + b, 0)
+            : newScores.slice(6, 12).reduce((a, b) => a + b, 0);
+
+        if (playerCurrentScore >= 13) {
+            return;
+        }
+
         newScores[index] += value;
 
         let newBlueScore = newScores.slice(0,6).reduce((a,b)=>a+b,0);
@@ -362,34 +393,34 @@ export default function GameScreen({ route }) {
 
     const bluePaletsRows = [
         [0,1].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i, i+1); playSound(2); }}>
                 <Image source={bluePaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
         [2,3].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i, i+1); playSound(2); }}>
                 <Image source={bluePaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
         [4,5].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i, i+1); playSound(2); }}>
                 <Image source={bluePaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
     ];
     const redPaletsRows = [
         [0,1].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i+6, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i+6, i+1); playSound(2); }}>
                 <Image source={redPaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
         [2,3].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i+6, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i+6, i+1); playSound(2); }}>
                 <Image source={redPaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
         [4,5].map(i => (
-            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => handleAddScore(i+6, i+1)}>
+            <TouchableOpacity key={i} style={styles.paletScoreBlock} onPress={() => { handleAddScore(i+6, i+1); playSound(2); }}>
                 <Image source={redPaletImages[i]} style={styles.paletScoreImg} />
             </TouchableOpacity>
         )),
@@ -397,34 +428,39 @@ export default function GameScreen({ route }) {
 
     return (
         <View style={styles.container}>
-            {modaleInfo && (
-                <View style={styles.victoryModal}>
-                    <View style={styles.modaleInfo}>
-                        <View style={styles.infoModale}>
-                            <Text style={styles.infoTitre}>Comment jouer ?</Text>
-                            <Text style={styles.sectionTxt}>1. Compter les points</Text>
-                                <Text style={styles.infoTxt}>
-                                    Pour chaque équipe, des palets sont identifiés de 1 à 6.
-                                    Lorsque votre équipe marque un score, il suffit d’appuyer sur le palet correspondant à son numéro (rouge pour l’équipe rouge, bleu pour l’équipe bleue). Le score de l’équipe s’incrémente automatiquement.
-                                </Text>
-                            <Text style={styles.sectionTxt}>2. Corriger une erreur</Text>
-                                <Text style={styles.infoTxt}>
-                                    Si une erreur s’est produite dans le comptage des points (miss click), utilisez le bouton “Erreur de zouzou” en bas de l’écran pour annuler la dernière action et corriger le score.
-                                </Text>
-                            <Text style={styles.sectionTxt}>3. Règles spéciales</Text>
-                                <Text style={styles.infoTxt}>
-                                    Certaines règles peuvent être paramétrées et activées avant la partie dans la page "Règles".
-                                    Dès que le score d’une équipe atteint l’une des valeurs paramétrées, la règle correspondante s’affichera automatiquement dans une popup, indiquant le nombre de gorgées à boire.
-                                </Text>
-                            <Text style={styles.sectionTxt}>4. Gagner la partie</Text>
-                                <Text style={styles.infoTxt}>
-                                    La première équipe à atteindre 13 points remporte la victoire !
-                                </Text>
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={modaleInfo}
+                    onRequestClose={() => setModalInfo(false)}
+                >
+                    <View style={styles.victoryModal}>
+                        <View style={styles.modaleInfo}>
+                            <View style={styles.infoModale}>
+                                <Text style={styles.infoTitre}>Comment jouer ?</Text>
+                                <Text style={styles.sectionTxt}>1. Compter les points</Text>
+                                    <Text style={styles.infoTxt}>
+                                        Pour chaque équipe, des palets sont identifiés de 1 à 6.
+                                        Lorsque votre équipe marque un score, il suffit d’appuyer sur le palet correspondant à son numéro (rouge pour l’équipe rouge, bleu pour l’équipe bleue). Le score de l’équipe s’incrémente automatiquement.
+                                    </Text>
+                                <Text style={styles.sectionTxt}>2. Corriger une erreur</Text>
+                                    <Text style={styles.infoTxt}>
+                                        Si une erreur s’est produite dans le comptage des points (miss click), utilisez le bouton “Erreur de zouzou” en bas de l’écran pour annuler la dernière action et corriger le score.
+                                    </Text>
+                                <Text style={styles.sectionTxt}>3. Règles spéciales</Text>
+                                    <Text style={styles.infoTxt}>
+                                        Certaines règles peuvent être paramétrées et activées avant la partie dans la page "Règles".
+                                        Dès que le score d’une équipe atteint l’une des valeurs paramétrées, la règle correspondante s’affichera automatiquement dans une popup, indiquant le nombre de gorgées à boire.
+                                    </Text>
+                                <Text style={styles.sectionTxt}>4. Gagner la partie</Text>
+                                    <Text style={styles.infoTxt}>
+                                        La première équipe à atteindre 13 points remporte la victoire !
+                                    </Text>
+                            </View>
+                            <TouchableOpacity style={styles.commencerBtn} onPress={() => setModaleInfo(false)}><Text style={styles.commencerTxt}>Commencer la partie</Text></TouchableOpacity>
                         </View>
-                        <TouchableOpacity style={styles.commencerBtn} onPress={() => setModaleInfo(false)}><Text style={styles.commencerTxt}>Commencer la partie</Text></TouchableOpacity>
                     </View>
-                </View>
-            )}
+                </Modal>
             <ConfirmDeleteModal
                 visible={showQuitModal}
                 onCancel={cancelQuit}
@@ -434,22 +470,27 @@ export default function GameScreen({ route }) {
                 confirmText="Quitter"
                 cancelText="Annuler"
             />
-            {showVictoryModal && (
-                <View style={styles.victoryModal}>
-                    <View style={styles.victoryContent}>
-                        <Text style={styles.victoryText}>Victoire de {winner?.name} !</Text>
-                        <Text style={styles.victoryScore}>Score : {winner?.score} - {looser?.score}</Text>
-                        <View style={{flexDirection:'row', justifyContent:'space-between', width:'100%', marginTop:10}}>
-                            <TouchableOpacity style={[styles.victoryCancelBtn, {flex:1, marginRight:5}]} onPress={() => setShowVictoryModal(false)}>
-                                <Text style={styles.victoryBtnText}>Retour</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.victoryConfirmBtn, {flex:1, marginLeft:5}]} onPress={handleVictoryConfirm}>
-                                <Text style={styles.victoryBtnText}>Terminer</Text>
-                            </TouchableOpacity>
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={showVictoryModal}
+                    onRequestClose={() => setShowVictoryModal(false)}
+                >
+                    <View style={styles.victoryModal}>
+                        <View style={styles.victoryContent}>
+                            <Text style={styles.victoryText}>Victoire de {winner?.name} !</Text>
+                            <Text style={styles.victoryScore}>Score : {winner?.score} - {looser?.score}</Text>
+                            <View style={{flexDirection:'row', justifyContent:'space-between', width:'100%', marginTop:10}}>
+                                <TouchableOpacity style={[styles.victoryCancelBtn, {flex:1, marginRight:5}]} onPress={() => setShowVictoryModal(false)}>
+                                    <Text style={styles.victoryBtnText}>Retour</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.victoryConfirmBtn, {flex:1, marginLeft:5}]} onPress={handleVictoryConfirm}>
+                                    <Text style={styles.victoryBtnText}>Terminer</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
-                </View>
-            )}
+                </Modal>
             <View style={styles.playersRow}>
                 <View style={styles.playerBlock}>
                     <View style={{flexDirection:'row', alignItems:'center'}}>
@@ -503,7 +544,7 @@ export default function GameScreen({ route }) {
                     <View style={{alignItems:'center', justifyContent:'center'}}>
                         <TouchableOpacity
                             style={styles.undoButton}
-                            onPress={() => { handleUndo(); triggerExplosion(); }}
+                            onPress={() => { playSound(0); handleUndo(); triggerExplosion(); }}
                             disabled={blueScore === 0 && redScore === 0}
                         >
                             <Text style={[styles.undoText, (blueScore === 0 && redScore === 0) && {opacity:0.5}]}>🏳️‍🌈 Erreur de zouzou 🏳️‍🌈</Text>
@@ -530,110 +571,131 @@ export default function GameScreen({ route }) {
                 </LinearGradient>
             </View>
             {ruleModalType === "scoreBased" && (
-                <View style={styles.victoryModal}>
-                    <View style={styles.victoryContent}>
-                        <Text style={styles.scoreTitre}>{activeRule.title}</Text>
-                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
-                        <Text style={styles.victoryScore}>
-                            <Text style={{color: '#1856A5'}}>{game.players[0].name}</Text> boit {modalRuleScores.blue} gorgées{'\n'}
-                            <Text style={{color: '#D33E43'}}>{game.players[1].name}</Text> boit {modalRuleScores.red} gorgées
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.scoreBtn}
-                            onPress={() => {
-                                incrementPlayerSips(0, modalRuleScores.blue);
-                                incrementPlayerSips(1, modalRuleScores.red);
-                                setHistory(history => {
-                                    if (!history.length) return history;
-                                    const last = history[history.length - 1];
-                                    return [
-                                        ...history.slice(0, -1),
-                                        { ...last, sipsGiven: [
-                                                { playerIdx: 0, sips: modalRuleScores.blue },
-                                                { playerIdx: 1, sips: modalRuleScores.red }
-                                            ]}
-                                    ];
-                                });
-                                setActiveRule(null); setRuleModalType(null);                            }}
-                        >
-                            <Text style={styles.victoryBtnText}>C'est bu !</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
-            {ruleModalType === "selectPlayer" && (
-                <View style={styles.victoryModal}>
-                    <View style={styles.victoryContent}>
-                        <Text style={styles.scoreTitre}>{activeRule.title}</Text>
-                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
-                        <Text style={styles.victoryScore}>{activeRule.sips}{'\n'}pour :</Text>
-                        <View style={{ flexDirection: 'row', marginTop: 4 }}>
-                            {[0, 1].map(idx => (
-                                <TouchableOpacity
-                                    key={idx}
-                                    style={[
-                                        styles.scoreJoueurBtn,
-                                        {
-                                            flex: 1,
-                                            marginLeft: idx === 1 ? 5 : 0,
-                                            marginRight: idx === 0 ? 5 : 0,
-                                            backgroundColor: idx === 0 ? "#1856A5" : "#D33E43"
-                                        }
-                                    ]}
-                                    onPress={() => {
-                                        let sips = activeRule.sips === "Cul sec !" ? 10 : parseInt(activeRule.sips, 10) || 1;
-                                        incrementPlayerSips(idx, sips);
-                                        setHistory(history => {
-                                            if (!history.length) return history;
-                                            const last = history[history.length - 1];
-                                            return [
-                                                ...history.slice(0, -1),
-                                                { ...last, sipsGiven: [{ playerIdx: idx, sips }] }
-                                            ];
-                                        });
-                                        setActiveRule(null);
-                                        setRuleModalType(null);
-                                    }}
-                                >
-                                    <Text style={styles.victoryBtnText}>{game.players[idx].name}</Text>
-                                </TouchableOpacity>
-                            ))}
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={true}
+                    onRequestClose={() => setRuleModalType(null)}
+                >
+                    <View style={styles.victoryModal}>
+                        <View style={styles.victoryContent}>
+                            <Text style={styles.scoreTitre}>{activeRule.title}</Text>
+                            <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
+                            <Text style={styles.victoryScore}>
+                                <Text style={{color: '#1856A5'}}>{game.players[0].name}</Text> boit {modalRuleScores.blue} gorgées{'\n'}
+                                <Text style={{color: '#D33E43'}}>{game.players[1].name}</Text> boit {modalRuleScores.red} gorgées
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.scoreBtn}
+                                onPress={() => {
+                                    incrementPlayerSips(0, modalRuleScores.blue);
+                                    incrementPlayerSips(1, modalRuleScores.red);
+                                    setHistory(history => {
+                                        if (!history.length) return history;
+                                        const last = history[history.length - 1];
+                                        return [
+                                            ...history.slice(0, -1),
+                                            { ...last, sipsGiven: [
+                                                    { playerIdx: 0, sips: modalRuleScores.blue },
+                                                    { playerIdx: 1, sips: modalRuleScores.red }
+                                                ]}
+                                        ];
+                                    });
+                                    setActiveRule(null); setRuleModalType(null);                            }}
+                            >
+                                <Text style={styles.victoryBtnText}>C'est bu !</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+                </Modal>
+            )}
+            {ruleModalType === "selectPlayer" && (
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={true}
+                    onRequestClose={() => setRuleModalType(null)}
+                >
+                    <View style={styles.victoryModal}>
+                        <View style={styles.victoryContent}>
+                            <Text style={styles.scoreTitre}>{activeRule.title}</Text>
+                            <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
+                            <Text style={styles.victoryScore}>{activeRule.sips}{'\n'}pour :</Text>
+                            <View style={{ flexDirection: 'row', marginTop: 4 }}>
+                                {[0, 1].map(idx => (
+                                    <TouchableOpacity
+                                        key={idx}
+                                        style={[
+                                            styles.scoreJoueurBtn,
+                                            {
+                                                flex: 1,
+                                                marginLeft: idx === 1 ? 5 : 0,
+                                                marginRight: idx === 0 ? 5 : 0,
+                                                backgroundColor: idx === 0 ? "#1856A5" : "#D33E43"
+                                            }
+                                        ]}
+                                        onPress={() => {
+                                            let sips = activeRule.sips === "Cul sec !" ? 10 : parseInt(activeRule.sips, 10) || 1;
+                                            incrementPlayerSips(idx, sips);
+                                            setHistory(history => {
+                                                if (!history.length) return history;
+                                                const last = history[history.length - 1];
+                                                return [
+                                                    ...history.slice(0, -1),
+                                                    { ...last, sipsGiven: [{ playerIdx: idx, sips }] }
+                                                ];
+                                            });
+                                            setActiveRule(null);
+                                            setRuleModalType(null);
+                                        }}
+                                    >
+                                        <Text style={styles.victoryBtnText}>{game.players[idx].name}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             )}
             {ruleModalType === "egalite" && (
-                <View style={styles.victoryModal}>
-                    <View style={styles.victoryContent}>
-                        <Text style={styles.scoreTitre}>{activeRule?.title || "RENCONTRE !"}</Text>
-                        <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
-                        <Text style={styles.victoryScore}>
-                            Tout le monde boit la gorgée de l'amitié !
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.scoreBtn}
-                            onPress={() => {
-                                incrementPlayerSips(0, 1);
-                                incrementPlayerSips(1, 1);
-                                setHistory(history => {
-                                    if (!history.length) return history;
-                                    const last = history[history.length - 1];
-                                    return [
-                                        ...history.slice(0, -1),
-                                        { ...last, sipsGiven: [
-                                                { playerIdx: 0, sips: 1 },
-                                                { playerIdx: 1, sips: 1 }
-                                            ]}
-                                    ];
-                                });
-                                setActiveRule(null);
-                                setRuleModalType(null);
-                            }}
-                        >
-                            <Text style={styles.victoryBtnText}>C'est bu !</Text>
-                        </TouchableOpacity>
+                <Modal
+                    animationType="fade"
+                    transparent
+                    visible={true}
+                    onRequestClose={() => setRuleModalType(null)}
+                >
+                    <View style={styles.victoryModal}>
+                        <View style={styles.victoryContent}>
+                            <Text style={styles.scoreTitre}>{activeRule?.title || "RENCONTRE !"}</Text>
+                            <Text style={styles.scoreText}>{game.players[0].score} - {game.players[1].score}</Text>
+                            <Text style={styles.victoryScore}>
+                                Tout le monde boit la gorgée de l'amitié !
+                            </Text>
+                            <TouchableOpacity
+                                style={styles.scoreBtn}
+                                onPress={() => {
+                                    incrementPlayerSips(0, 1);
+                                    incrementPlayerSips(1, 1);
+                                    setHistory(history => {
+                                        if (!history.length) return history;
+                                        const last = history[history.length - 1];
+                                        return [
+                                            ...history.slice(0, -1),
+                                            { ...last, sipsGiven: [
+                                                    { playerIdx: 0, sips: 1 },
+                                                    { playerIdx: 1, sips: 1 }
+                                                ]}
+                                        ];
+                                    });
+                                    setActiveRule(null);
+                                    setRuleModalType(null);
+                                }}
+                            >
+                                <Text style={styles.victoryBtnText}>C'est bu !</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
+                </Modal>
             )}
         </View>
     );
@@ -865,7 +927,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         height: '94%',
-        elevation: 5,
+        elevation: 8,
+        zIndex: 11,
     },
     infoModale: {
         flex: 12,

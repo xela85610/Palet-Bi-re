@@ -1,9 +1,10 @@
-import {Image, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Image, Pressable, StyleSheet, Text, Animated, Easing, View} from 'react-native';
 import { clearStorage } from '../storage/Storage';
 import React, {useState} from "react";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import {Link} from "expo-router";
 import { useNavigation } from '@react-navigation/native';
+import {Audio} from "expo-av";
 
 function ZoomPressable({ children, style, ...props }) {
     return (
@@ -23,47 +24,92 @@ export default function CreditScreen() {
 
     const [modaleDelete, setModaleDelete] = useState(false);
     const navigation = useNavigation();
-
-    const handleClearStorage = async () => {
-        await clearStorage();
-        setModaleDelete(false);
-        navigation.navigate('Accueil');
-    };
+    const [isDeleting, setIsDeleting] = useState(false);
+    const logoScale = React.useRef(new Animated.Value(1)).current;
 
     const openModale = async () => {
         setModaleDelete(true);
-    }
+    };
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true);
+        logoScale.setValue(1);
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/sounds/deleteAll.mp3')
+        );
+        await sound.playAsync();
+        Animated.timing(logoScale, {
+            toValue: 0,
+            duration: 5000,
+            useNativeDriver: true,
+            easing: Easing.linear,
+        }).start(async () => {
+            await clearStorage();
+            setIsDeleting(false);
+            setModaleDelete(false);
+            navigation.navigate('Accueil');
+        });
+    };
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.titre}>Crédits</Text>
-                <Text style={styles.subtitle}>Développé & Désigné par Axel Charrier</Text>
-                <Text style={styles.subtitle}>Si vous rencontrez un problème sur l'application, un bug ou que vous avez des idées d'améliorations, n'hésitez pas à me contacter :</Text>
-                <Text style={styles.subtitleMail}>charrier.axel85610@gmail.com</Text>
-                <Text style={styles.txtDelete}>Supprimer toutes les données de l'application</Text>
-                <ZoomPressable style={styles.deleteDataBtn} onPress={openModale} ><Text style={styles.deleteDataTxt}>Supprimer</Text></ZoomPressable>
-                <ConfirmDeleteModal
-                    visible={modaleDelete}
-                    onCancel={() => setModaleDelete(false)}
-                    onConfirm={handleClearStorage}
-                    title="Voulez-vous vraiment supprimer toutes les données de l'application ?"
-                    message="Cette action est irréversible."
-                    confirmText="Supprimer"
-                    cancelText="Annuler"
-                />
-            </View>
-            <View style={styles.footer}>
-                <View style={styles.gitLink}>
-                    <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
-                        <Image source={require('../assets/images/github.png')} style={styles.gitImg}/>
-                    </Link>
-                    <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
-                        <Text style={styles.gitTxt}>GitHub</Text>
-                    </Link>
+            {isDeleting ? (
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                    <Text style={{
+                        color: '#FF0000',
+                        fontWeight: 'bold',
+                        fontSize: 24,
+                        marginBottom: 50,
+                        textAlign: 'center'
+                    }}>
+                        Suppression en cours...
+                    </Text>
+                    <Animated.Image
+                        source={require('../assets/images/logo.png')}
+                        style={{
+                            width: 400,
+                            height: 400,
+                            transform: [{ scale: logoScale }]
+                        }}
+                        resizeMode="contain"
+                    />
                 </View>
-                <Text style={styles.footerTxt}>© 2025 Axel Charrier | Projet open-source</Text>
-            </View>
+            ) : (
+                <>
+                    <View style={styles.header}>
+                        <Text style={styles.titre}>Crédits</Text>
+                        <Text style={styles.subtitle}>Développé & Désigné par Axel Charrier</Text>
+                        <Text style={styles.subtitle}>
+                            Si vous rencontrez un problème sur l'application, un bug ou que vous avez des idées d'améliorations, n'hésitez pas à me contacter :
+                        </Text>
+                        <Text style={styles.subtitleMail}>charrier.axel85610@gmail.com</Text>
+                        <Text style={styles.txtDelete}>Supprimer toutes les données de l'application</Text>
+                        <ZoomPressable style={styles.deleteDataBtn} onPress={openModale}>
+                            <Text style={styles.deleteDataTxt}>Supprimer</Text>
+                        </ZoomPressable>
+                        <ConfirmDeleteModal
+                            visible={modaleDelete}
+                            onCancel={() => setModaleDelete(false)}
+                            onConfirm={handleConfirmDelete}
+                            title="Voulez-vous vraiment supprimer toutes les données de l'application ?"
+                            message="Cette action est irréversible."
+                            confirmText="Supprimer"
+                            cancelText="Annuler"
+                        />
+                    </View>
+                    <View style={styles.footer}>
+                        <View style={styles.gitLink}>
+                            <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
+                                <Image source={require('../assets/images/github.png')} style={styles.gitImg}/>
+                            </Link>
+                            <Link href={"https://github.com/xela85610/Palet-Bi-re"}>
+                                <Text style={styles.gitTxt}>GitHub</Text>
+                            </Link>
+                        </View>
+                        <Text style={styles.footerTxt}>© 2025 Axel Charrier | Projet open-source</Text>
+                    </View>
+                </>
+            )}
         </View>
     );
 }

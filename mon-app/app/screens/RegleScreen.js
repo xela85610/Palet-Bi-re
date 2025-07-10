@@ -4,6 +4,7 @@ import { AntDesign, Feather } from '@expo/vector-icons';
 import { getRules, saveRules } from '../storage/Storage';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import { createRule } from '../models/Rule';
+import { Audio } from 'expo-av';
 
 export default function RegleScreen() {
     const [rules, setRules] = useState([]);
@@ -21,6 +22,13 @@ export default function RegleScreen() {
     useEffect(() => {
         loadRules();
     }, []);
+
+    async function playSound() {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/sounds/delete.mp3')
+        );
+        await sound.playAsync();
+    }
 
     const loadRules = async () => {
         const data = await getRules();
@@ -80,7 +88,8 @@ export default function RegleScreen() {
         setDeleteModalVisible(true);
     };
 
-    const confirmDeleteRule = () => {
+    const confirmDeleteRule = async () => {
+        await playSound();
         const updated = rules.filter(r => r.id !== ruleToDelete);
         saveRulesToStorage(updated);
         setDeleteModalVisible(false);
@@ -123,8 +132,7 @@ export default function RegleScreen() {
                 <Text style={styles.header}>Règles personnalisées</Text>
                     <Pressable
                         style={styles.infoIcon}
-                        onPress={() => setInfoModalVisible(true)}
-                    >
+                        onPress={() => setInfoModalVisible(true)}>
                         <Text style={styles.infoText}>i</Text>
                     </Pressable>
             </View>
@@ -148,7 +156,7 @@ export default function RegleScreen() {
                 <AntDesign name="plus" size={30} color="#fff" />
             </ZoomPressable>
             <Modal
-                animationType="slide"
+                animationType="fade"
                 transparent
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}
@@ -209,7 +217,7 @@ export default function RegleScreen() {
                 </View>
             </Modal>
             <Modal
-                animationType="slide"
+                animationType="fade"
                 transparent
                 visible={infoModalVisible}
                 onRequestClose={() => setInfoModalVisible(false)}

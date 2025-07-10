@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { getPlayers, savePlayers } from '../storage/Storage';
 import { createPlayer } from '../models/Player';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+import {Audio} from "expo-av";
 
 function ZoomPressable({ children, style, ...props }) {
     return (
@@ -52,6 +53,13 @@ export default function JoueurScreen() {
         }
     };
 
+    async function playSound() {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/sounds/delete.mp3')
+        );
+        await sound.playAsync();
+    }
+
     const pickImage = async () => {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== 'granted') {
@@ -86,6 +94,7 @@ export default function JoueurScreen() {
         setDeleteModalVisible(true);
     };
     const confirmDeletePlayer = async () => {
+        await playSound();
         if (!playerToDelete) return;
         const updated = players.filter((p) => p.id !== playerToDelete.id);
         setPlayers(updated);
@@ -138,7 +147,7 @@ export default function JoueurScreen() {
                 <AntDesign name="plus" size={30} color="#fff" />
             </ZoomPressable>
             <Modal
-                animationType="slide"
+                animationType="fade"
                 transparent
                 visible={modalVisible}
                 onRequestClose={() => setModalVisible(false)}

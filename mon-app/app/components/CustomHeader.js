@@ -1,11 +1,13 @@
 import React from 'react';
 import { TouchableOpacity, Image, View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useNavigationState  } from '@react-navigation/native';
 
-const CustomHeader = ({ onHomePress, onCreditsPress }) => {
+const CustomHeader = ({ onHomePress }) => {
 
   const navigation = useNavigation();
+
+  const routeName = useNavigationState(state => state.routes[state.index].name);
 
   const handleHomePress = () => {
     if (onHomePress) {
@@ -16,9 +18,7 @@ const CustomHeader = ({ onHomePress, onCreditsPress }) => {
   };
 
   const handleCreditsPress = () => {
-    if (onCreditsPress) {
-      onCreditsPress();
-    } else {
+    if (routeName === 'Accueil') {
       navigation.navigate('Crédits');
     }
   };

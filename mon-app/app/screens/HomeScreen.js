@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Dimensions, Image } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome5, Feather } from '@expo/vector-icons';
 import CreateGameModal from '../components/CreateGameModal';
+import { Audio } from 'expo-av';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -42,8 +43,10 @@ const MenuButton = ({ title, icon, color, iconColor, onPress }) => {
 };
 
 export default function HomeScreen({ navigation }) {
+
     const [modalVisible, setModalVisible] = React.useState(false);
     const scaleAnim = React.useRef(new Animated.Value(1)).current;
+
     const handlePressIn = () => {
         Animated.spring(scaleAnim, {
             toValue: 0.92,
@@ -61,6 +64,13 @@ export default function HomeScreen({ navigation }) {
         }).start();
     };
 
+    async function playSound() {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/sounds/button.mp3')
+        );
+        await sound.playAsync();
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.subtitle}>Visez, lancez, trinquez – le palet comme on l’aime !</Text>
@@ -71,28 +81,28 @@ export default function HomeScreen({ navigation }) {
                     color="#CFE5FF"
                     iconColor="#203D80"
                     icon={<MaterialCommunityIcons name="account-group" size={40} color="#203D80" />}
-                    onPress={() => navigation.navigate('Joueurs')}
+                    onPress={() => { playSound(); navigation.navigate('Joueurs'); }}
                 />
                 <MenuButton
                     title="Règles"
                     color="#FFD7B5"
                     iconColor="#C25E00"
                     icon={<MaterialCommunityIcons name="file-document-edit" size={40} color="#C25E00" />}
-                    onPress={() => navigation.navigate('Règles')}
+                    onPress={() => { playSound(); navigation.navigate('Règles'); }}
                 />
                 <MenuButton
                     title="Classements"
                     color="#FFE899"
                     iconColor="#C27C00"
                     icon={<FontAwesome5 name="trophy" size={36} color="#C27C00" />}
-                    onPress={() => navigation.navigate('Classement')}
+                    onPress={() => { playSound(); navigation.navigate('Classement'); }}
                 />
                 <MenuButton
                     title="Historique"
                     color="#D7DDE8"
                     iconColor="#3A4F66"
                     icon={<Feather name="calendar" size={40} color="#3A4F66" />}
-                    onPress={() => navigation.navigate('Historique')}
+                    onPress={() => { playSound(); navigation.navigate('Historique'); }}
                 />
             </View>
 
